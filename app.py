@@ -1,96 +1,138 @@
 import streamlit as st
-import joblib
 import pandas as pd
-import numpy as np
+import datetime
 
-st.set_page_config(
-    page_title="Fintech Scoring & Anti-Fraude UEMOA",
-    page_icon="🏦",
-    layout="wide"
-)
+st.set_page_config(page_title="Système Anti-Fraude & Rétrocession en Cascade (Norme RBI/CENTIF)", layout="wide")
 
-@st.cache_resource
-def load_models():
-    m_credit = joblib.load('modele_scoring_uemoa.pkl')
-    m_fraude = joblib.load('modele_fraude_uemoa.pkl')
-    return m_credit, m_fraude
+st.title("🛡️ Module National de Résolution des Litiges & Blocage en Cascade")
+st.caption("Architecture conforme aux directives de la RBI (India Model) et de la BCEAO / CENTIF")
 
-model_credit, model_fraude = load_models()
+# 1. Barre latérale - Paramètres de conformité
+st.sidebar.header("⚙️ Normes Réglementaires")
+st.sidebar.markdown("**Cadre d'application :**")
+st.sidebar.write("- Directive RBI/NPCI sur les transactions frauduleuses")
+st.sidebar.write("- Instruction BCEAO LCB-FT / CENTIF")
+st.sidebar.write("- Délai d'interception d'urgence (SLA) : **< 30 minutes**")
 
-st.title("🏦 Plateforme de Décision Prudentielle & Lutte Anti-Fraude (BCEAO)")
-st.markdown("Système de Scoring Crédit Alternative Data & Monitoring des Risques Monétiques")
-st.markdown("---")
+# Tabs pour l'application
+tab_signalement, tab_traçage, tab_conformation = st.tabs([
+    "🚨 1. Signalement & Ticket d'Urgence", 
+    "🔍 2. Graphe de Traçage & Gel Conservatoire", 
+    "📜 3. Rapport de Rétrocession & Conformité"
+])
 
-tab1, tab2 = st.tabs(["📊 Évaluation Crédit & Décision", "🛡️ Contrôle Anti-Fraude & AML"])
-
-with tab1:
+# ----------------------------------------------------
+# TAB 1 : SIGNALEMENT ET CRÉATION DE TICKET
+# ----------------------------------------------------
+with tab_signalement:
+    st.header("Déclaration Immédiate de Transfert Erroné / Suspect")
+    
     col1, col2 = st.columns(2)
-    
     with col1:
-        st.subheader("👤 Informations Emprunteur")
-        secteur = st.selectbox("Secteur d'activité :", ['Planteur_Cacao', 'Commercant_Informel', 'Salarie_Prive', 'Fonctionnaire', 'Artisan'])
-        revenu = st.number_input("Revenu mensuel estimé (FCFA) :", min_value=30000, value=300000, step=25000)
-        cooperative = st.radio("Affiliation Coopérative / Tontine :", options=[1, 0], format_func=lambda x: "Oui" if x==1 else "Non")
-        taux_endettement = st.slider("Taux d'endettement actuel (%) :", 0, 100, 25) / 100.0
-
+        id_transaction = st.text_input("Identifiant unique de transaction (UTRN / Ref)", "TXN-2026-9988234")
+        emetteur_num = st.text_input("Numéro de l'expéditeur (Victime)", "+225 0701020304")
+        montant = st.number_input("Montant contesté (FCFA)", min_value=1000, value=500000, step=5000)
+    
     with col2:
-        st.subheader("📱 Comportement Financier")
-        flux_mm = st.number_input("Flux Mobile Money mensuel (FCFA) :", min_value=0, value=250000, step=25000)
-        epargne_mm = st.number_input("Solde épargne Mobile Money (FCFA) :", min_value=0, value=50000, step=10000)
-        retards = st.slider("Incidents de paiement (6 derniers mois) :", 0, 10, 0)
+        plateforme = st.selectbox("Canal d'origine", ["Wave", "Orange Money", "MTN MoMo", "Virement Interbancaire (BCEAO)"])
+        motif_incident = st.selectbox(
+            "Catégorie de l'incident", 
+            [
+                "Erreur de saisie de numéro (Wrong Beneficiary)",
+                "Fraude / Ingestion par ingénierie sociale",
+                "Transaction non autorisée (Vol de compte)",
+                "Compte Mule suspecté"
+            ]
+        )
+        horodatage = st.time_input("Heure exacte du transfert", datetime.time(11, 30))
 
-with tab2:
-    st.subheader("⚠️ Moteur de Détection de Fraude (Mobile Money)")
-    col_f1, col_f2 = st.columns(2)
-    
-    with col_f1:
-        depots_24h = st.number_input("Nombre de petits dépôts reçus en <24h (Structuring) :", min_value=0, value=1)
-        sim_swap = st.radio("Changement de carte SIM récent (< 72h) :", options=[1, 0], format_func=lambda x: "Oui" if x==1 else "Non")
-    
-    with col_f2:
-        ratio_retrait = st.slider("Ratio de retrait immédiat des fonds reçus (%) :", 0, 100, 20) / 100.0
+    st.markdown("---")
+    lancer_procedure = st.button("🚨 DÉCLENCHER LE PROTOCOLE DE GEL CONSERVATOIRE")
 
-st.markdown("---")
+# ----------------------------------------------------
+# TAB 2 : TRAÇAGE ET GEL DES COMPTES MULES (MULE HUNTER MODULE)
+# ----------------------------------------------------
+with tab_traçage:
+    st.header("Mule Account Cascade Freezing Engine")
+    
+    if 'procedure_active' not in st.session_state:
+        st.session_state.procedure_active = False
 
-if st.button("🚀 Analyser le Dossier Complet", use_container_width=True):
-    # Dataframes pour prédictions
-    df_c = pd.DataFrame([{
-        'secteur_activite': secteur,
-        'revenu_mensuel_estime_fcfa': revenu,
-        'volume_flux_mobile_money_fcfa': flux_mm,
-        'solde_epargne_mobile_fcfa': epargne_mm,
-        'retards_paiement_6mois': retards,
-        'taux_endettement': taux_endettement,
-        'membre_cooperative_tontine': cooperative
-    }])
-    
-    df_f = pd.DataFrame([{
-        'volume_flux_mobile_money_fcfa': flux_mm,
-        'solde_epargne_mobile_fcfa': epargne_mm,
-        'nb_depots_suspects_24h': depots_24h,
-        'ratio_retrait_immediat': ratio_retrait,
-        'changement_sim_recent': sim_swap
-    }])
-    
-    # CALCULS
-    proba_defaut = model_credit.predict_proba(df_c)[0][1]
-    proba_fraude = model_fraude.predict_proba(df_f)[0][1]
-    score_fintech = int((1 - proba_defaut) * 850)
-    
-    # AFFICHAGE RÉSULTATS
-    st.subheader("📋 Synthèse de la Décision d'Octroi")
-    c1, c2, c3 = st.columns(3)
-    
-    c1.metric("Score FinTech", f"{score_fintech} / 850")
-    c2.metric("Probabilité de Défaut (PD)", f"{proba_defaut * 100:.1f} %")
-    c3.metric("Indice de Risque de Fraude", f"{proba_fraude * 100:.1f} %")
-    
-    # LOGIQUE PRUDENTIELLE COMBINÉE
-    if proba_fraude > 0.60:
-        st.error("🚨 **BLOCAGE SÉCURITÉ : ALERTE FRAUDE AMF/BCEAO.** Activité suspecte détectée sur le compte Mobile Money (SIM Swap / Structuring). Dossier transmis à la conformité.")
-    elif proba_defaut < 0.25:
-        st.success(f"✅ **CRÉDIT ACCORDÉ.** Risque très faible. Montant maximum recommandé : {int(revenu * 4)} FCFA à un taux préférentiel de 8.5%.")
-    elif proba_defaut < 0.50:
-        st.warning(f"⚠️ **PASSAGE EN COMITÉ DE CRÉDIT.** Risque modéré. Aval de la coopérative ou cautionnement solidaire requis.")
+    if lancer_procedure:
+        st.session_state.procedure_active = True
+
+    if st.session_state.procedure_active:
+        st.error(f"⚠️ PROTOCOLE D'URGENCE DÉCLENCHÉ POUR LA TRANSACTION : **{id_transaction}**")
+        
+        # Algorithme de simulation de traçage du flux (Niveaux X, Y, Z)
+        data_chaine = [
+            {
+                "Niveau de Traçage": "Niveau 1 (Recepteur Direct X)",
+                "Compte Identifié": "+225 0509080706",
+                "Plateforme": plateforme,
+                "Montant Reçu": f"{montant:,.0f} FCFA",
+                "Solde Restant": f"{montant * 0.4:,.0f} FCFA",
+                "Statut du Gel": "🛑 GELÉ (Hold)",
+                "Action": "Blocage des retraits & Transferts"
+            },
+            {
+                "Niveau de Traçage": "Niveau 2 (Compte Intermediate Y)",
+                "Compte Identifié": "+225 0102030405",
+                "Plateforme": "Wave",
+                "Montant Reçu": f"{montant * 0.4:,.0f} FCFA",
+                "Solde Restant": f"{montant * 0.2:,.0f} FCFA",
+                "Statut du Gel": "🛑 GELÉ (Hold)",
+                "Action": "Blocage des retraits & Transferts"
+            },
+            {
+                "Niveau de Traçage": "Niveau 3 (Compte Terminus Z)",
+                "Compte Identifié": "+225 0708091011",
+                "Plateforme": "Orange Money",
+                "Montant Reçu": f"{montant * 0.2:,.0f} FCFA",
+                "Solde Restant": f"{montant * 0.2:,.0f} FCFA",
+                "Statut du Gel": "🛑 GELÉ (Hold)",
+                "Action": "Cash-Out Bloqué en Point de Vente"
+            }
+        ]
+        
+        df_mule = pd.DataFrame(data_chaine)
+        st.subheader("Graphe de circulation des fonds et statut d'interception")
+        st.table(df_mule)
+        
+        col_a, col_b, col_c = st.columns(3)
+        col_a.metric("Fonds Secourus / Récupérables", f"{montant:,.0f} FCFA", "100%")
+        col_b.metric("Nombre de comptes Mules bloqués", "3 comptes", "+3")
+        col_c.metric("Temps d'exécution du gel", "1.2 seconde", "Automatique")
+
+        st.warning(
+            "🔒 **Saisie Conservatoire Automatique :** "
+            "Les soldes des comptes X, Y et Z ont été restreints par clé API d'urgence. "
+            "Aucune opération de retrait en liquide (Cash-Out) ou de transfert sortant n'est autorisée pour ces utilisateurs."
+        )
     else:
-        st.error("❌ **CRÉDIT REFUSÉ.** Capacité de remboursement insuffisante ou historique de retard trop élevé.")
+        st.info("Veuillez d'abord remplir et valider un signalement dans l'onglet 1.")
+
+# ----------------------------------------------------
+# TAB 3 : RÉTROCESION ET PROCÈS-VERBAL CENTIF / REGULATEUR
+# ----------------------------------------------------
+with tab_conformation:
+    st.header("Génération du Procès-Verbal de Rétrocession")
+    
+    st.markdown("""
+    **Caractéristiques de l'Ordre de Rétrocession (Normes RBI / BCEAO) :**
+    1. **Mandat de remboursement automatique :** Si aucune justification valide n'est fournie sous 24h par le tiers, les fonds en séquestre sont réacheminés vers l'émetteur.
+    2. **Notification d'obligation :** Un SMS légal d'avertissement est envoyé aux détenteurs des comptes ciblés.
+    3. **Enregistrement CENTIF :** Fiche d'incident générée pour inscription sur la liste des comptes suspects.
+    """)
+    
+    if st.button("📄 Générer le Rapport Légal (PDF / Format CENTIF)"):
+        st.success("✅ Rapport de gel conservatoire généré avec succès !")
+        
+        st.json({
+            "Reference_Incident": id_transaction,
+            "Norme_Applicable": "RBI Cyber Dispute / BCEAO AML-KYC",
+            "Dispositif_Applique": "Cascade Account Freezing Protocol",
+            "Montant_Total_Sous_Sequestre": montant,
+            "Nombre_Comptes_Affectes": 3,
+            "Statut_Dossier": "En cours de restitution"
+        })

@@ -1,41 +1,112 @@
-import streamlit as st
-import pandas as pd
 import datetime
 import uuid
+import pandas as pd
+import streamlit as st
 
 # -----------------------------------------------------------------------------
-# CONFIGURATION ET CHARTE GRAPHIQUE BANCAIRE PAN-AFRICAINE
+# CONFIGURATION DE LA PAGE & STYLE CSS (iOS 18 + EFFET 3D & GLASSMORPHISM)
 # -----------------------------------------------------------------------------
 st.set_page_config(
-    page_title="Plateforme FinTech & Anti-Fraude Pan-Africaine (BCEAO / BEAC / PAPSS)",
+    page_title=(
+        "Plateforme FinTech & Anti-Fraude Pan-Africaine (BCEAO / BEAC / PAPSS)"
+    ),
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded",
 )
 
-st.markdown("""
+st.markdown(
+    """
 <style>
+    /* Importation d'une police moderne */
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+
+    html, body, [class*="css"] {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    /* Arrière-plan global élégant avec dégradé subtil */
+    .stApp {
+        background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #090d16 100%);
+        color: #f8fafc;
+    }
+
+    /* --- EFFET 3D & CARDS GLASSMORPHISM (iOS 18 style) --- */
+    .metric-card, div[data-testid="stMetric"], .stPlotlyChart, div.stForm {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 20px;
+        padding: 20px;
+        box-shadow: 0 10px 30px 0 rgba(0, 0, 0, 0.35), 
+                    inset 0 1px 0 0 rgba(255, 255, 255, 0.1); /* Effet 3D relief */
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    .metric-card:hover, div[data-testid="stMetric"]:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 40px 0 rgba(0, 0, 0, 0.5), 
+                    inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(59, 130, 246, 0.4);
+    }
+
+    /* --- SIDEBAR STYLE iOS 18 --- */
+    section[data-testid="stSidebar"] {
+        background: rgba(15, 23, 42, 0.85);
+        backdrop-filter: blur(20px);
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    /* Boutons 3D */
+    .stButton > button {
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        color: white;
+        border-radius: 14px;
+        padding: 0.6rem 1.2rem;
+        font-weight: 600;
+        border: none;
+        box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        transition: all 0.2s ease;
+    }
+
+    .stButton > button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+        background: linear-gradient(135deg, #60a5fa 0%, #2563eb 100%);
+    }
+
+    /* Onglets stylisés */
     .stTabs [data-baseweb="tab-list"] {
-        gap: 6px;
+        gap: 8px;
     }
     .stTabs [data-baseweb="tab"] {
-        padding-left: 12px;
-        padding-right: 12px;
-        font-weight: bold;
-    }
-    .metric-card {
-        background-color: #f8f9fa;
-        border-left: 5px solid #0d6efd;
-        padding: 12px;
-        border-radius: 5px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        padding: 10px 16px;
+        font-weight: 600;
+        border: 1px solid rgba(255, 255, 255, 0.05);
     }
 </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 # -----------------------------------------------------------------------------
-# BARRE LATÉRALE : SÉLECTION DES ZONES BANCAIRES ET RÉSEAUX D'AFRIQUE
+# BARRE LATÉRALE : CONFIGURATION & CHOIX DU STYLE DE MENU (iOS 18 vs Classique)
 # -----------------------------------------------------------------------------
-st.sidebar.image("https://img.icons8.com/color/96/shield-with-signature.png", width=65)
+st.sidebar.image(
+    "https://img.icons8.com/color/96/shield-with-signature.png", width=65
+)
 st.sidebar.title("Configuration Panafricaine")
+
+# --- AJOUT DU CHOIX DU STYLE DE MENU ---
+st.sidebar.markdown("---")
+style_menu = st.sidebar.selectbox(
+    "🎛️ Style de Menu de Navigation",
+    ["iOS 18 (Moderne / 3D)", "Classique (Standard)"],
+)
 
 zone_reglementaire = st.sidebar.selectbox(
     "Zone Réglementaire / Banque Centrale",
@@ -44,19 +115,28 @@ zone_reglementaire = st.sidebar.selectbox(
         "CEMAC (BEAC - Cameroun, Gabon, Congo...)",
         "Afrique de l'Est / M-Pesa (CBK - Kenya, Ouganda...)",
         "Afrique du Nord & Austral (SARB, CBE - Afrique du Sud, Égypte)",
-        "Réseau Transfrontalier Panafricain (PAPSS / Afreximbank)"
-    ]
+        "Réseau Transfrontalier Panafricain (PAPSS / Afreximbank)",
+    ],
 )
 
 institution_type = st.sidebar.selectbox(
     "Établissement Opérateur",
     [
-        "Banque Commerciale (SGBCI, Ecobank, Coris, Attijariwafa, UBA, Stanbic)",
-        "Opérateur Mobile Money (Wave, Orange Money, MTN MoMo, Moov, M-Pesa, Airtel)",
+        (
+            "Banque Commerciale (SGBCI, Ecobank, Coris, Attijariwafa, UBA,"
+            " Stanbic)"
+        ),
+        (
+            "Opérateur Mobile Money (Wave, Orange Money, MTN MoMo, Moov, M-Pesa,"
+            " Airtel)"
+        ),
         "FinTech / Neobanque (Djamo, Kuda, Chipper Cash)",
         "Institution de Microfinance (Baobab, Advans, Cofina)",
-        "Régulateur / Cellule de Renseignement Financier (CENTIF, ANIF, BCEAO)"
-    ]
+        (
+            "Régulateur / Cellule de Renseignement Financier (CENTIF, ANIF,"
+            " BCEAO)"
+        ),
+    ],
 )
 
 st.sidebar.markdown("---")
@@ -66,47 +146,66 @@ st.sidebar.write("✔️ Règlementation LCB-FT (CENTIF / ANIF / GAFI)")
 st.sidebar.write("✔️ Compensation PAPSS (Paiements Transfrontaliers)")
 st.sidebar.write("✔️ Normes Prudentielles Bâle III / IFRS 9")
 
-# Titre
+# Titre principal
 st.title("🏛️ Système National & Panafricain de Sécurité Financière et de Scoring")
-st.caption(f"Plateforme unifiée d'interception et d'octroi de crédit — Zone : **{zone_reglementaire}** | Organisme : **{institution_type}**")
+st.caption(
+    f"Plateforme unifiée d'interception et d'octroi de crédit — Zone : **{zone_reglementaire}** | Organisme : **{institution_type}**"
+)
 
 # -----------------------------------------------------------------------------
-# ONGLETS OPÉRATIONNELS COUVRANT TOUS LES BESOINS DES BANQUES ET OPÉRATEURS
+# GESTION DU MENU (Mode iOS 18 vs Classique)
 # -----------------------------------------------------------------------------
-tab_fraud, tab_credit, tab_mobile, tab_agri, tab_papss, tab_stress, tab_compliance = st.tabs([
+noms_onglets = [
     "🚨 1. Gel en Cascade & Fraud Rings",
     "💳 2. Scoring d'Octroi Prudentiel",
     "📱 3. Scoring Mobile Money & Neobanques",
     "🌱 4. Risque Agro-Saisonnier Panafricain",
     "🌍 5. Interconnexion Transfrontalière PAPSS",
     "📈 6. Stress-Test Prudentiel (Bâle III / IFRS 9)",
-    "📜 7. Conformité CENTIF / ANIF / ISO 20022"
-])
+    "📜 7. Conformité CENTIF / ANIF / ISO 20022",
+]
+
+if style_menu == "iOS 18 (Moderne / 3D)":
+    # Navigation sous forme de saine émulation iOS 18 avec cartes/onglets fluides
+    st.markdown(
+        "<div style='font-size: 14px; color: #94a3b8; margin-bottom: 10px;'>✨"
+        " Mode d'affichage actif : <b>iOS 18 Glassmorphism 3D</b></div>",
+        unsafe_allow_html=True,
+    )
+else:
+    st.markdown(
+        "<div style='font-size: 14px; color: #94a3b8; margin-bottom: 10px;'>📋"
+        " Mode d'affichage actif : <b>Menu Classique</b></div>",
+        unsafe_allow_html=True,
+    )
+
+# Création des onglets principaux
+tab_fraud, tab_credit, tab_mobile, tab_agri, tab_papss, tab_stress, tab_compliance = st.tabs(noms_onglets)
 
 # -----------------------------------------------------------------------------
-# TAB 1 : BLOCAGE EN CASCADE & DÉTECTION DES RÉSEAUX DE FRAUDE (FONDATION SBI / UPI / BCEAO)
+# TAB 1 : BLOCAGE EN CASCADE & DÉTECTION DES RÉSEAUX DE FRAUDE
 # -----------------------------------------------------------------------------
 with tab_fraud:
-    st.header("Moteur d'Interception des Fraudes & Traçage des Comptes Mules (Panafricain)")
-    st.info("Ce module interconnecte les banques (Ecobank, SGBCI...) et les opérateurs (Wave, Orange, MTN, M-Pesa) pour geler instantanément la chaîne de comptes complices lors d'une fraude ou d'une erreur de virement.")
+    st.header("Moteur d'Interception des Fraudes & Traçage des Comptes Mules")
+    st.info("Ce module interconnecte les banques et les opérateurs pour geler instantanément la chaîne de comptes complices.")
 
     c1, c2 = st.columns(2)
     with c1:
         utrn = st.text_input("Référence Transactionnelle Unique (UTRN / ISO Ref)", f"UTRN-{uuid.uuid4().hex[:10].upper()}")
         compte_victime = st.text_input("Compte Émetteur / Déclarant", placeholder="+225 07 00 00 00 00 ou CI89 0100 1234...")
-        montant_contesté = st.number_input("Montant de la Transaction Contestée (FCFA / Dollars / Shilling)", min_value=1000, value=2500000, step=50000)
+        montant_contesté = st.number_input("Montant de la Transaction Contestée", min_value=1000, value=2500000, step=50000)
 
     with c2:
-        plateforme_source = st.selectbox("Plateforme d'Origine", ["Wave", "Orange Money", "MTN MoMo", "Moov Money", "M-Pesa", "Virement Interbancaire (BCEAO / BEAC)", "SWIFT / PAPSS"])
+        plateforme_source = st.selectbox("Plateforme d'Origine", ["Wave", "Orange Money", "MTN MoMo", "Moov Money", "M-Pesa", "Virement Interbancaire", "SWIFT / PAPSS"])
         typologie_fraude = st.selectbox("Typologie de l'Incident", [
             "Erreur de Saisie de Numéro (Wrong Beneficiary)",
-            "Ingénierie Sociale / Phishing / Arnaque aux Faux Agents",
+            "Ingénierie Sociale / Phishing / Arnaque",
             "Compte Mule / Blanchiment Suspecté",
             "Piratage SIM Swap / Usurpation d'Identité"
         ])
         niveau_urgence = st.select_slider("Urgence Réglementaire", options=["CRITIQUE (Gel < 30 secondes)", "ÉLEVÉ", "MODÉRÉ"])
 
-    st.subheader("🕸️ Reconstitution Dynamique du Graphe de Transferts Multi-Réseaux")
+    st.subheader("🕸️ Reconstitution Dynamique du Graphe de Transferts")
     nb_niveaux = st.slider("Nombre de comptes récepteurs détectés dans la chaîne", 1, 5, 3)
 
     comptes_chaine = []
@@ -115,7 +214,7 @@ with tab_fraud:
     for i in range(nb_niveaux):
         col_n1, col_n2, col_n3, col_n4 = st.columns([2, 2, 2, 2])
         with col_n1:
-            compte_id = st.text_input(f"Compte Récepteur N{i+1}", key=f"c_pan_{i}", placeholder="+225... / +237... / +254...")
+            compte_id = st.text_input(f"Compte Récepteur N{i+1}", key=f"c_pan_{i}", placeholder="+225... / +237...")
         with col_n2:
             op_id = st.selectbox(f"Établissement N{i+1}", ["Wave", "Orange Money", "MTN MoMo", "M-Pesa", "Ecobank", "SGBCI", "Coris Bank", "UBA"], key=f"op_pan_{i}")
         with col_n3:
@@ -123,7 +222,7 @@ with tab_fraud:
             montant_niveau = (montant_contesté * ratio_part) / 100
         with col_n4:
             is_mule = compte_id in mules_bloquees
-            st.markdown("Status : " + ("<span style='color:red; font-weight:bold;'>🚨 RÉSIDIVISTE (LISTE NOIRE)</span>" if is_mule else "<span style='color:orange;'>⚠️ MULE POTENTIELLE</span>"), unsafe_allow_html=True)
+            st.markdown("Status : " + ("<span style='color:#ef4444; font-weight:bold;'>🚨 RÉSIDIVISTE</span>" if is_mule else "<span style='color:#f59e0b;'>⚠️ POTENTIEL</span>"), unsafe_allow_html=True)
 
         if compte_id:
             comptes_chaine.append({
@@ -131,7 +230,7 @@ with tab_fraud:
                 "Identifiant Compte": compte_id,
                 "Opérateur / Banque": op_id,
                 "Montant Localisé": f"{montant_niveau:,.0f} FCFA / Unités",
-                "Risque Récidive": "CRITIQUE (Déjà répertorié)" if is_mule else "MODÉRÉ",
+                "Risque Récidive": "CRITIQUE" if is_mule else "MODÉRÉ",
                 "Action Exécutée": "SÉQUESTRE CONSERVATOIRE (HOLD)"
             })
 
@@ -140,27 +239,27 @@ with tab_fraud:
         if not compte_victime or len(comptes_chaine) == 0:
             st.error("⚠️ Veuillez saisir le compte émetteur et au moins un compte récepteur.")
         else:
-            st.error(f"🛑 ORDRE DE BLOCAGE SYSTÉMIQUE TRANSMIS PAR LA BANQUE CENTRALE — RÉF : {utrn}")
+            st.error(f"🛑 ORDRE DE BLOCAGE SYSTÉMIQUE TRANSMIS — RÉF : {utrn}")
             st.table(pd.DataFrame(comptes_chaine))
-            st.success("✅ **Mesures de blocage actives :** Retraits aux DAB/Kiosques désactivés, virements sortants bloqués, notification juridique transmise par SMS.")
+            st.success("✅ **Mesures de blocage actives :** Retraits aux DAB/Kiosques désactivés, virements sortants bloqués.")
 
 # -----------------------------------------------------------------------------
-# TAB 2 : SCORING D'OCTROI DE PRÊT PRUDENTIEL (NORMES BANCAIRES CÔTE D'IVOIRE & AFRIQUE)
+# TAB 2 : SCORING D'OCTROI DE PRÊT PRUDENTIEL
 # -----------------------------------------------------------------------------
 with tab_credit:
     st.header("Analyse Solvabilité & Octroi Prudentiel (BCEAO / BEAC / Bâle III)")
-    st.info("Évaluation automatique du risque de crédit pour les entreprises, PME, commerçants et salariés.")
+    st.info("Évaluation automatique du risque de crédit pour les entreprises, PME et salariés.")
 
     col_cr1, col_cr2 = st.columns(2)
     with col_cr1:
-        secteur = st.selectbox("Secteur d'Activité", ["Agro-industrie (Cacao, Café, Hévéa, Anacarde)", "Commerce Général & Import-Export", "BTP & Infrastructure", "Transport & Logistique", "Services & Salariés"])
+        secteur = st.selectbox("Secteur d'Activité", ["Agro-industrie", "Commerce Général & Import-Export", "BTP & Infrastructure", "Transport & Logistique", "Services & Salariés"])
         chiffre_affaires = st.number_input("Chiffre d'Affaires / Revenu mensuel moyen (FCFA)", min_value=100000, value=5000000, step=100000)
         engagements_encours = st.number_input("Remboursements de prêts en cours / mois (FCFA)", min_value=0, value=500000, step=20000)
 
     with col_cr2:
         pret_demande = st.number_input("Montant du Prêt Demandé (FCFA)", min_value=100000, value=10000000, step=250000)
         duree_mois = st.slider("Durée du remboursement (Mois)", 1, 60, 12)
-        registre_impayes = st.radio("Fichage Banque Centrale (CIP / Bureau de Crédit - Creditinfo)", ["Aucun incident", "Régularisé", "Incident actif / Interdit bancaire"])
+        registre_impayes = st.radio("Fichage Banque Centrale (CIP / Bureau de Crédit)", ["Aucun incident", "Régularisé", "Incident actif / Interdit bancaire"])
 
     mensualite = (pret_demande * 1.02) / duree_mois
     taux_endettement = ((engagements_encours + mensualite) / chiffre_affaires) * 100 if chiffre_affaires > 0 else 100
@@ -174,18 +273,18 @@ with tab_credit:
     m3.metric("Capacité d'Endettement Dispo", f"{max(0, (chiffre_affaires * 0.33) - engagements_encours):,.0f} FCFA")
 
     if registre_impayes == "Incident actif / Interdit bancaire":
-        st.error("❌ **OCTROI REFUSÉ :** Emprunteur fiché au Bureau d'Information sur le Crédit (BIC) / Liste Rouge.")
+        st.error("❌ **OCTROI REFUSÉ :** Emprunteur fiché au Bureau d'Information sur le Crédit (BIC).")
     elif taux_endettement > 33:
-        st.error(f"❌ **OCTROI REFUSÉ :** Taux d'endettement ({taux_endettement:.1f}%) supérieur au plafond prudentiel réglementaire de 33%.")
+        st.error(f"❌ **OCTROI REFUSÉ :** Taux d'endettement ({taux_endettement:.1f}%) supérieur au plafond réglementaire de 33%.")
     else:
-        st.success(f"✅ **PRÊT VALIDÉ :** Déblocage autorisé de {pret_demande:,.0f} FCFA vers le compte client.")
+        st.success(f"✅ **PRÊT VALIDÉ :** Déblocage autorisé de {pret_demande:,.0f} FCFA.")
 
 # -----------------------------------------------------------------------------
-# TAB 3 : SCORING COMPORTEMENTAL MOBILE MONEY & NEOBANQUES (Wave, Orange, MTN, M-Pesa, Djamo)
+# TAB 3 : SCORING COMPORTEMENTAL MOBILE MONEY & NEOBANQUES
 # -----------------------------------------------------------------------------
 with tab_mobile:
     st.header("Alternative Credit Scoring pour le Secteur Informel & Neobanques")
-    st.info("Permet d'accorder du crédit aux marchands, chauffeurs VTC et indépendants sans fiche de paie, grâce à leurs données de portefeuille électronique (Wave, Orange, MTN, M-Pesa).")
+    st.info("Octroi de crédit basé sur les données de portefeuilles électroniques (Wave, Orange, MTN, M-Pesa).")
 
     col_mb1, col_mb2 = st.columns(2)
     with col_mb1:
@@ -196,7 +295,7 @@ with tab_mobile:
     with col_mb2:
         solde_moyen_nuit = st.number_input("Solde moyen conservé à la fermeture (FCFA)", min_value=0, value=250000)
         taux_retrait_cash = st.slider("% du solde converti immédiatement en espèces", 0, 100, 35)
-        stabilité_geographique = st.selectbox("Stabilité de la zone d'activité (Données GSM)", ["Très stable (Même commune/marché)", "Mobile (Régional)", "Instable"])
+        stabilité_geographique = st.selectbox("Stabilité de la zone d'activité", ["Très stable (Même commune/marché)", "Mobile (Régional)", "Instable"])
 
     score_fintech = 400
     if anciennete_portefeuille >= 12: score_fintech += 120
@@ -209,22 +308,22 @@ with tab_mobile:
     st.metric("Score de Crédit Digital", f"{score_fintech} / 950 points")
 
     if score_fintech >= 750:
-        st.success("🌟 **Catégorie A (Excellente) :** Prêt de trésorerie instantané déblocable en 1 clic sans garantie.")
+        st.success("🌟 **Catégorie A (Excellente) :** Prêt de trésorerie instantané déblocable en 1 clic.")
     elif score_fintech >= 600:
-        st.warning("⚡ **Catégorie B (Modérée) :** Prêt accordé avec plafonnement à 50% de la demande.")
+        st.warning("⚡ **Catégorie B (Modérée) :** Prêt accordé avec plafonnement à 50%.")
     else:
-        st.error("🚫 **Catégorie C (Élevée) :** Historique de conservation du solde insuffisant.")
+        st.error("🚫 **Catégorie C (Élevée) :** Solde de nuit insuffisant.")
 
 # -----------------------------------------------------------------------------
-# TAB 4 : RISQUE AGRO-SAISONNIER (Cacao, Café, Anacarde, Hévéa, Coton)
+# TAB 4 : RISQUE AGRO-SAISONNIER
 # -----------------------------------------------------------------------------
 with tab_agri:
     st.header("Modélisation Agricole Panafricaine & Campagnes Cacao / Café")
-    st.info("Ajuste les échéanciers de remboursement des coopératives et planteurs sur les calendriers réels des récoltes en Afrique.")
+    st.info("Ajuste les échéanciers de remboursement des coopératives sur les cycles réels.")
 
     col_ag1, col_ag2 = st.columns(2)
     with col_ag1:
-        bassin_prod = st.selectbox("Zone de Production", ["Côte d'Ivoire - Bas-Sassandra (Soubré/San-Pédro)", "Côte d'Ivoire - Haut-Sassandra (Daloa)", "Ghana - Ashanti Region", "Cameroun - Centre/Littoral", "Kenya - Rift Valley"])
+        bassin_prod = st.selectbox("Zone de Production", ["Côte d'Ivoire - Bas-Sassandra", "Côte d'Ivoire - Haut-Sassandra", "Ghana - Ashanti Region", "Cameroun", "Kenya"])
         culture_type = st.selectbox("Culture Spéculative", ["Cacao", "Café", "Anacarde (Cajou)", "Coton", "Hévéa / Palmier"])
         surface_ha = st.number_input("Surface exploitée (Hectares)", min_value=0.5, value=8.0)
 
@@ -241,46 +340,45 @@ with tab_agri:
     st.markdown("---")
     st.subheader("📅 Échéancier Flottant Aligné sur les Récoltes")
     st.metric("Revenu Net Estimé de la Campagne", f"{revenu_agri:,.0f} FCFA")
-    st.write("• **Grande Campagne (Octobre à Mars) :** Prelevé automatique de 85% du remboursement principal.")
-    st.write("• **Petite Campagne (Avril à Juillet) :** Prelevé du solde complémentaire de 15%.")
-    st.write("• **Période de Soudure (Août/Septembre) :** Suspension automatique des échéances sans pénalités.")
+    st.write("• **Grande Campagne (Octobre à Mars) :** Prélèvement de 85%.")
+    st.write("• **Petite Campagne (Avril à Juillet) :** Prélèvement de 15%.")
+    st.write("• **Période de Soudure (Août/Septembre) :** Suspension des échéances.")
 
 # -----------------------------------------------------------------------------
-# TAB 5 : COMPENSATIONS TRANSFRONTALIÈRES PANAFRICAINES (RÉSEAU PAPSS / AFREXIMBANK)
+# TAB 5 : COMPENSATIONS TRANSFRONTALIÈRES (PAPSS)
 # -----------------------------------------------------------------------------
 with tab_papss:
     st.header("Plateforme Interbancaire de Paiement Transfrontalier (PAPSS)")
-    st.info("Gère les règlements instantanés et la conversion automatique des devises locales entre pays d'Afrique (ex: Franc CFA XOF ↔ Naira Nigérian NGN ↔ Shilling Kényan KES).")
+    st.info("Règlements instantanés et conversion automatique des devises locales entre pays d'Afrique.")
 
     col_p1, col_p2 = st.columns(2)
     with col_p1:
         pays_origine = st.selectbox("Pays Émetteur", ["Côte d'Ivoire (XOF)", "Sénégal (XOF)", "Nigéria (NGN)", "Kenya (KES)", "Cameroun (XAF)"])
-        banque_emetteur = st.selectbox("Banque / Opérateur Source", ["Ecobank Côte d'Ivoire", "SGBCI", "Wave CI", "Zenith Bank Nigéria", "KCB Kenya"])
+        banque_emetteur = st.selectbox("Banque / Opérateur Source", ["Ecobank", "SGBCI", "Wave CI", "Zenith Bank", "KCB Kenya"])
         montant_devise_source = st.number_input("Montant à envoyer (Monnaie Locale)", min_value=10000, value=5000000)
 
     with col_p2:
         pays_destination = st.selectbox("Pays Destinataire", ["Nigéria (NGN)", "Kenya (KES)", "Ghana (GHS)", "Côte d'Ivoire (XOF)"])
-        banque_destinataire = st.selectbox("Banque / Opérateur Cible", ["Access Bank Nigéria", "M-Pesa Kenya", "GCB Ghana", "NSIA Banque CI"])
-        motif_commercial = st.selectbox("Type d'Échange ZLECAF", ["Importation Marchandises B2B", "Règlement Prestation de Service", "Transfert de Trésorerie Filiale"])
+        banque_destinataire = st.selectbox("Banque / Opérateur Cible", ["Access Bank", "M-Pesa Kenya", "GCB Ghana", "NSIA Banque"])
+        motif_commercial = st.selectbox("Type d'Échange ZLECAF", ["Importation Marchandises B2B", "Règlement Prestation", "Trésorerie Filiale"])
 
     st.markdown("---")
     if st.button("💱 SIMULER LA COMPENSATION EN MONNAIE LOCALE VIA PAPSS"):
-        st.success("✅ **Règlement Transfrontalier Autorisé sous Accord Afreximbank / Banque Centrale :**")
-        st.write("• **Élimination du besoin en Dollars USD / Euros :** Conversion directe XOF ↔ NGN/KES.")
-        st.write("• **Temps de Règlement Interbancaire :** Transaction exécutée sous 120 secondes.")
-        st.write("• **Vérification Anti-Blanchiment :** Validation instantanée de l'origine des fonds.")
+        st.success("✅ **Règlement Transfrontalier Autorisé sous Accord Afreximbank :**")
+        st.write("• **Élimination du besoin en USD / Euros :** Conversion directe XOF ↔ NGN/KES.")
+        st.write("• **Temps de Règlement :** Exécuté sous 120 secondes.")
 
 # -----------------------------------------------------------------------------
 # TAB 6 : STRESS-TEST FINANCIER & NORMES BÂLE III / IFRS 9
 # -----------------------------------------------------------------------------
 with tab_stress:
     st.header("Module Prudentiel d'Analyse des Chocs (Bâle III / IFRS 9)")
-    st.info("Évalue la résistance du portefeuille de prêt bancaire face aux chocs macroéconomiques (dévaluation, crise des matières premières, hausse de l'inflation).")
+    st.info("Évalue la résistance du portefeuille face aux chocs macroéconomiques.")
 
     col_st1, col_st2 = st.columns(2)
     with col_st1:
         choc_chiffre_affaires = st.slider("Choc de baisse du Chiffre d'Affaires (%)", 0, 70, 35)
-        hausse_taux_interet = st.slider("Hausse du taux directer Banque Centrale (+ points de base)", 0, 500, 150)
+        hausse_taux_interet = st.slider("Hausse du taux directeur (+ points de base)", 0, 500, 150)
 
     with col_st2:
         provision_requise_ifrs9 = "Stage 1 (Normal)" if choc_chiffre_affaires < 20 else ("Stage 2 (Dégradation significative)" if choc_chiffre_affaires < 40 else "Stage 3 (Défaillance / NPL)")
@@ -289,18 +387,16 @@ with tab_stress:
     st.markdown("---")
     st.subheader("🧪 Résultat de la Simulation sous Choc")
     if choc_chiffre_affaires > 30:
-        st.error("🚨 **RISQUE DE DÉFAUT ÉLEVÉ :** Le client nécessite une restructuration de dette ou la mise en jeu des garanties réelles.")
+        st.error("🚨 **RISQUE DE DÉFAUT ÉLEVÉ :** Nécessite une restructuration de dette.")
     else:
-        st.success("🛡️ **CAPACITÉ DE RÉSISTANCE CONFIRMÉE :** Les marges opérationnelles absorbent le choc économique.")
+        st.success("🛡️ **CAPACITÉ DE RÉSISTANCE CONFIRMÉE.**")
 
 # -----------------------------------------------------------------------------
-# TAB 7 : CONFORMITÉ ET RAPPORTAGE REGLEMENTAIRE (CENTIF / ANIF / ISO 20022)
+# TAB 7 : CONFORMITÉ ET RAPPORTAGE (CENTIF / ANIF / ISO 20022)
 # -----------------------------------------------------------------------------
 with tab_compliance:
-    st.header("Registre d'Audit & Déclarations Officielle d'Alerte")
-    st.markdown("""
-    Exportation automatisée des déclarations de transactions suspectes (DTS) directement transmises aux cellules de renseignement financier nationales (**CENTIF Côte d'Ivoire**, **ANIF**, **BCEAO**, **BEAC**).
-    """)
+    st.header("Registre d'Audit & Déclarations Officielles d'Alerte")
+    st.markdown("Exportation automatisée des déclarations de transactions suspectes (DTS) vers les cellules de renseignement financier (**CENTIF Côte d'Ivoire**, **ANIF**, **BCEAO**).")
 
     if st.button("📄 GÉNÉRER LE RAPPORT STRUCTURÉ D'ALERTE (ISO 20022 camt.056)"):
         rapport_iso = {
@@ -321,4 +417,4 @@ with tab_compliance:
             }
         }
         st.json(rapport_iso)
-        st.success("✅ Fichier d'instruction réglementaire prêt pour téléversement automatique au régulateur.")
+        st.success("✅ Fichier d'instruction réglementaire prêt pour transmission sécurisée.")

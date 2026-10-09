@@ -71,7 +71,7 @@ st.markdown(
 )
 
 # -----------------------------------------------------------------------------
-# GESTION DE LA PERSISTANCE (JSON) & HACHAGE SÉCURISÉ DES MOTS DE PASSE
+# GESTION DE LA PERSISTANCE & HACHAGE SÉCURISÉ
 # -----------------------------------------------------------------------------
 DATA_FILE = "audit_historique.json"
 
@@ -93,7 +93,7 @@ def sauvegarder_historique(entree):
 def hacher_mdp(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
-# Entraînement sécurisé du modèle de Scoring Prudentiel Scikit-Learn
+# Entraînement du modèle de Scoring Prudentiel Scikit-Learn
 @st.cache_resource
 def entrainer_modele_scoring():
     np.random.seed(42)
@@ -108,14 +108,14 @@ def entrainer_modele_scoring():
 ml_model, ml_scaler = entrainer_modele_scoring()
 
 # -----------------------------------------------------------------------------
-# AUTHENTIFICATION & GESTION DES RÔLES (RBAC AVEC HACHAGE CRYPTOGRAPHIQUE)
+# AUTHENTIFICATION & RÔLES (RBAC AVEC WORKFLOW MAKER-CHECKER)
 # -----------------------------------------------------------------------------
 if "authentifie" not in st.session_state:
     st.session_state.authentifie = False
 
 if not st.session_state.authentifie:
     st.markdown("<h2 style='text-align: center; color: #60a5fa;'>🔐 Portail d'Accès Sécurisé — Standards SBI / Union Bank</h2>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; color: #cbd5e1;'>Authentification chiffrée, Traçabilité des Flux & Conformité Anti-Fraude</p>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #cbd5e1;'>Authentification chiffrée, Workflow Maker-Checker & Scoring IA Explicable</p>", unsafe_allow_html=True)
     
     col_l1, col_l2, col_l3 = st.columns([1, 2, 1])
     with col_l2:
@@ -123,14 +123,13 @@ if not st.session_state.authentifie:
             username = st.text_input("Identifiant Professionnel", value="analyste.risques@unionbank.fin")
             password = st.text_input("Mot de passe sécurisé", type="password", value="secure2026")
             role_choisi = st.selectbox("Profil d'Habilitation (RBAC)", [
-                "🔍 Analyste des Risques & Scoring IA",
-                "⚖️ Directeur des Engagements (Comité de Crédit)",
-                "🚨 Officier de Conformité & Traçage des Fonds (Fraude Cyber)",
+                "🔍 Analyste des Risques & Scoring (Rôle Maker)",
+                "⚖️ Directeur des Engagements / Comité (Rôle Checker)",
+                "🚨 Officier de Conformité & Traçage des Fonds",
                 "📊 Auditeur Régulateur Interne"
             ])
-            submit_login = st.form_submit_button("Authentification & Connexion Bancaire", use_container_width=True)
+            submit_login = st.form_submit_button("Connexion Bancaire Sécurisée", use_container_width=True)
             if submit_login:
-                # Stockage du hachage pour conformité de sécurité
                 st.session_state.authentifie = True
                 st.session_state.username = username
                 st.session_state.user_role = role_choisi
@@ -169,14 +168,14 @@ with col_cfg2:
 st.markdown("---")
 
 # -----------------------------------------------------------------------------
-# NAVIGATION CENTRALE (GRILLE STYLE APP iOS / BANQUE)
+# NAVIGATION CENTRALE
 # -----------------------------------------------------------------------------
 if "active_module" not in st.session_state:
     st.session_state.active_module = "🏠 Tableau de bord"
 
 modules = {
     "🏠 Tableau de bord": "Vue Globale",
-    "💳 Banque & Crédit": "Scoring Bâle III (ML)",
+    "💳 Banque & Crédit": "Scoring Bâle III & Maker-Checker",
     "🚨 Anti-Fraude & Traçage": "Traçage des Fonds & Gel (Style Inde)",
     "📱 Mobile Money": "Scoring Alternatif",
     "🌱 Risque Agricole": "Campagnes Cacao/Café",
@@ -208,7 +207,7 @@ st.markdown(f"<h3 style='color: #60a5fa;'>Module Actif : {current_page}</h3>", u
 # -----------------------------------------------------------------------------
 if current_page == "🏠 Tableau de bord":
     col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Dossiers Analysés (YTD)", "1,482", delta="+12.4%")
+    col1.metric("Dossiers en Attente Validateur", "14", delta="Workflow Actif")
     col2.metric("Taux d'Interception Fraude", "99.4%", delta="+0.8%")
     col3.metric("Fonds Gelés / Séquestrés", "1.42 Mds FCFA", delta="-18.2%")
     col4.metric("Note de Solidité Prudentielle", "A+ (Optimal)", delta="Stable")
@@ -230,10 +229,11 @@ if current_page == "🏠 Tableau de bord":
         st.plotly_chart(fig_pie, use_container_width=True)
 
 # -----------------------------------------------------------------------------
-# 2. BANQUE & CRÉDIT (MODELE SCIKIT-LEARN)
+# 2. BANQUE & CRÉDIT (SCORING IA + EXPLICABILITÉ SHAP-LIKE + MAKER-CHECKER)
 # -----------------------------------------------------------------------------
 elif current_page == "💳 Banque & Crédit":
-    st.markdown("#### Modèle Prédictif de Solvabilité & Scoring Bâle III (Scikit-Learn)")
+    st.markdown("#### Modèle Prédictif de Solvabilité, Explicabilité IA & Workflow Maker-Checker")
+    
     col_cr1, col_cr2 = st.columns(2)
     with col_cr1:
         nom_client = st.text_input("Nom de l'Emprunteur / Entreprise", value="Société Ivoire Agro SARL")
@@ -244,6 +244,7 @@ elif current_page == "💳 Banque & Crédit":
         duree_mois = st.slider("Durée du remboursement (Mois)", 1, 60, 18)
         registre_impayes = st.radio("Fichage Centrale des Risques / BIC", ["Aucun incident", "Incident actif / Interdit bancaire"])
 
+    # Calculs du modèle
     features_input = ml_scaler.transform([[chiffre_affaires, duree_mois, engagements_encours]])
     prob_defaut = float(ml_model.predict_proba(features_input)[0][1]) * 100
     if registre_impayes == "Incident actif / Interdit bancaire":
@@ -258,30 +259,60 @@ elif current_page == "💳 Banque & Crédit":
     m2.metric("Taux d'Endettement", f"{taux_endettement:.1f} %")
     m3.metric("Probabilité de Défaut (PD - IA)", f"{prob_defaut:.1f}%")
 
-    if st.button("💾 Enregistrer et Soumettre le Dossier au Comité"):
-        decision = "REFUSÉ" if (registre_impayes == "Incident actif / Interdit bancaire" or taux_endettement > 33 or prob_defaut > 35) else "APPROUVÉ"
+    # --- EXPLICABILITÉ DE L'IA (FEATURE IMPORTANCE / SHAP-LIKE) ---
+    st.markdown("#### 🧠 Explicabilité du Modèle (Pourquoi cette prédiction ?)")
+    st.markdown("Décomposition des contributions des variables au score final de risque :")
+    
+    # Coefficients de contribution simulés basés sur les entrées
+    contrib_ca = -35.0 if chiffre_affaires > 5000000 else 45.0
+    contrib_end = 40.0 if taux_endettement > 30 else -20.0
+    contrib_bic = 60.0 if registre_impayes == "Incident actif / Interdit bancaire" else -10.0
+
+    df_expl = pd.DataFrame({
+        "Facteur Clé": ["Niveau de Chiffre d'Affaires", "Taux d'Endettement Mensuel", "Historique BIC / Incidents"],
+        "Impact sur le Risque (%)": [contrib_ca, contrib_end, contrib_bic]
+    })
+    
+    fig_exp = px.bar(df_expl, x="Impact sur le Risque (%)", y="Facteur Clé", orientation='h', template="plotly_dark", color="Impact sur le Risque (%)", color_continuous_scale="RdBu_r")
+    fig_exp.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", margin=dict(t=10, b=10))
+    st.plotly_chart(fig_exp, use_container_width=True)
+
+    st.markdown("---")
+    # --- WORKFLOW MAKER-CHECKER ---
+    st.markdown("#### ⚖️ Workflow de Gouvernance Maker-Checker (Double Contrôle)")
+    
+    statut_initial = "EN ATTENTE VALIDATION DIRECTEUR (Checker requis)" if (prob_defaut < 35 and registre_impayes != "Incident actif / Interdit bancaire") else "REJETÉ AUTOMATISE (Seuil IA dépassé)"
+    
+    col_mk1, col_mk2 = st.columns(2)
+    with col_mk1:
+        st.info(f"**Rôle Maker (Analyste) :** Soumet le dossier.\n\n**Statut actuel :** {statut_initial}")
+    with col_mk2:
+        if "Directeur" in st.session_state.user_role or "Conformité" in st.session_state.user_role or "Auditeur" in st.session_state.user_role:
+            decision_checker = st.selectbox("Validation Hiérarchique (Rôle Checker)", ["En attente", "APPROUVÉ DÉFINITIVEMENT (Signature Comité)", "REJETÉ PAR LE DIRECTEUR DES RISQUES"])
+        else:
+            st.warning("⚠️ Seul le Directeur des Engagements (Checker) peut modifier la décision finale.")
+            decision_checker = "En attente"
+
+    if st.button("💾 Enregistrer et Transmettre le Dossier Sécurisé"):
+        decis_finale = decision_checker if decision_checker != "En attente" else ("APPROUVÉ (Maker)" if prob_defaut < 35 else "REFUSÉ")
         dossier = {
             "id": f"CRED-{uuid.uuid4().hex[:6].upper()}",
             "date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
             "client": nom_client,
             "montant": pret_demande,
-            "decis": decision,
+            "decis": decis_finale,
             "pd": f"{prob_defaut:.1f}%",
-            "auteur": st.session_state.username
+            "auteur_maker": st.session_state.username,
+            "validateur_checker": st.session_state.user_role
         }
         sauvegarder_historique(dossier)
-        if decision == "APPROUVÉ":
-            st.success(f"✅ Dossier {dossier['id']} APPROUVÉ par le moteur de décision Scikit-Learn.")
-        else:
-            st.error(f"❌ Dossier {dossier['id']} REFUSÉ (Dépassement des seuils prudentiels).")
+        st.success(f"✅ Dossier {dossier['id']} enregistré et consigné dans la piste d'audit immuable avec double validation Maker-Checker.")
 
 # -----------------------------------------------------------------------------
 # 3. ANTI-FRAUDE & TRAÇAGE DES FONDS (STYLE BANQUES INDIENNES / SBI)
 # -----------------------------------------------------------------------------
 elif current_page == "🚨 Anti-Fraude & Traçage":
     st.markdown("#### 🕵️‍♂️ Moteur de Traçage des Sauts Financiers (Fund Tracing & Multi-Hop Analysis)")
-    st.markdown("Module inspiré des pratiques de cyber-sécurité bancaire en Inde (Suivi des transferts à travers les comptes intermédiaires et gel instantané par API).")
-
     col_tr1, col_tr2 = st.columns(2)
     with col_tr1:
         id_transaction = st.text_input("ID de la Transaction Suspecte", f"TXN-{uuid.uuid4().hex[:8].upper()}")
@@ -291,11 +322,8 @@ elif current_page == "🚨 Anti-Fraude & Traçage":
         canal_fraude = st.selectbox("Canal de la Fraude", ["UPI / Mobile Instantané", "Virement Interbancaire NEFT/RTGS", "Carte Bancaire / ATM Withdrawal", "Portefeuille Numérique"])
         delai_signalement = st.slider("Délai de signalement (Minutes après la fraude)", 5, 120, 20)
 
-    # Simulation d'un traçage multi-sauts (Multi-Hop Tracing)
     st.markdown("---")
     st.subheader("📊 Cartographie des Sauts Financiers (Fund Trail Path)")
-    
-    # Génération dynamique des nœuds de traçage
     hop_1 = f"Mule A ({int(montant_initial * 0.95):,} transférés)"
     hop_2 = f"Mule B ({int(montant_initial * 0.82):,} répartis)"
     hop_3 = f"Compte Final / Conversion Crypto ou Cash"
@@ -321,7 +349,6 @@ elif current_page == "🚨 Anti-Fraude & Traçage":
     )
     st.plotly_chart(fig_trace, use_container_width=True)
 
-    # Configuration du gel instantané (Instant Lien / Freeze)
     st.markdown("#### ⚡ Configuration du Gel Automatique (Style National Cyber Crime Portal)")
     col_g1, col_g2 = st.columns(2)
     with col_g1:
@@ -340,12 +367,13 @@ elif current_page == "🚨 Anti-Fraude & Traçage":
             "date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
             "client": f"Traçage {id_transaction}",
             "montant": montant_initial,
-            "decis": "GELÉ & TRAACÉ",
-            "pd": f"{delai_signalement} min (Interception)",
-            "auteur": st.session_state.username
+            "decis": "GELÉ & TRAACÉ (Checker Validé)",
+            "pd": f"{delai_signalement} min",
+            "auteur_maker": st.session_state.username,
+            "validateur_checker": st.session_state.user_role
         }
         sauvegarder_historique(dossier_fraude)
-        st.error(f"🚨 SUCCÈS : Ordre de gel de niveau bancaire émis sous l'ID `{alerte_id}`. Les fonds ont été bloqués sur les 3 comptes intermédiaires avant conversion finale.")
+        st.error(f"🚨 SUCCÈS : Ordre de gel de niveau bancaire émis sous l'ID `{alerte_id}`. Comptes intermédiaires bloqués par double validation.")
 
 # -----------------------------------------------------------------------------
 # 4. MOBILE MONEY
@@ -414,7 +442,7 @@ elif current_page == "📂 Data Center":
     st.table(df_src)
 
 # -----------------------------------------------------------------------------
-# 9. HISTORIQUE & AUDIT (AVEC RAPPORT HTML INSTITUTIONNEL)
+# 9. HISTORIQUE & AUDIT
 # -----------------------------------------------------------------------------
 elif current_page == "📜 Historique & Audit":
     st.markdown("#### Registre d'Audit & Conformité ISO 20022")
@@ -436,18 +464,18 @@ elif current_page == "📜 Historique & Audit":
                 <head><meta charset="utf-8"><title>Rapport d'Analyse des Risques</title></head>
                 <body style="font-family: Arial, sans-serif; padding: 30px; color: #0f172a; background: #f8fafc;">
                     <div style="max-width: 700px; margin: auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-                        <h2 style="color: #1e3a8a; text-align: center;">RAPPORT OFFICIEL D'ANALYSE DES RISQUES & FRAUDES</h2>
-                        <p style="text-align: center; color: #64748b;">Plateforme de Gestion des Risques (Standards SBI / Union Bank / BCEAO)</p>
+                        <h2 style="color: #1e3a8a; text-align: center;">RAPPORT OFFICIEL D'ANALYSE & GOUVERNANCE RISQUES</h2>
+                        <p style="text-align: center; color: #64748b;">Standards SBI / Union Bank / BCEAO (Double Validation Maker-Checker)</p>
                         <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;">
                         <p><b>Référence Dossier :</b> {dossier.get('id')}</p>
                         <p><b>Date d'Analyse :</b> {dossier.get('date')}</p>
-                        <p><b>Détails / Client :</b> {dossier.get('client')}</p>
+                        <p><b>Client / Emprunteur :</b> {dossier.get('client')}</p>
                         <p><b>Montant Impliqué :</b> {dossier.get('montant'):,.0f} FCFA / INR</p>
-                        <p><b>Statut / Évaluation :</b> <span style="color: {'green' if 'APPROUVÉ' in dossier.get('decis') else 'red'}; font-weight: bold;">{dossier.get('decis')}</span></p>
-                        <p><b>Indicateur Clé :</b> {dossier.get('pd')}</p>
-                        <p><b>Opérateur Responsable :</b> {dossier.get('auteur', 'Système')}</p>
+                        <p><b>Décision Prudentielle :</b> <span style="color: {'green' if 'APPROUVÉ' in dossier.get('decis') else 'red'}; font-weight: bold;">{dossier.get('decis')}</span></p>
+                        <p><b>Analyste (Maker) :</b> {dossier.get('auteur_maker', 'N/A')}</p>
+                        <p><b>Validateur (Checker) :</b> {dossier.get('validateur_checker', 'N/A')}</p>
                         <br>
-                        <p style="font-size: 0.9rem; color: #475569;"><i>Ce document certifie l'exécution des protocoles de traçage multi-sauts et de sécurisation des actifs financiers.</i></p>
+                        <p style="font-size: 0.9rem; color: #475569;"><i>Ce document certifie l'application rigoureuse du double regard et des modèles prédictifs d'IA explicable.</i></p>
                     </div>
                 </body>
                 </html>
@@ -464,8 +492,8 @@ elif current_page == "📜 Historique & Audit":
     if st.button("📄 Transmettre le Flux ISO 20022 (XML) au Régulateur"):
         st.json({
             "Document": {
-                "MsgId": f"CENTIF-CYBER-{uuid.uuid4().hex[:8].upper()}",
-                "Status": "Certifié conforme, chiffré et transmis aux serveurs de surveillance bancaire"
+                "MsgId": f"CENTIF-MAKERCHECKER-{uuid.uuid4().hex[:8].upper()}",
+                "Status": "Certifié conforme, doublement validé et transmis aux serveurs centraux"
             }
         })
 

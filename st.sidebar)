@@ -1,0 +1,12 @@
+# Selon le choix fait dans la sidebar, on affiche la page correspondante :
+if menu_option == "Accueil":
+    st.title("Page d'Accueil")
+    # ... votre code d'accueil existant ...
+
+elif menu_option == "Analyse de Crédit":
+    st.title("Analyse de Crédit")
+    # ... votre code d'analyse existant ...
+
+elif menu_option == "Scoring Professionnel & Sécurité":
+    # C'ICI QU'IL FAUT APPELER LA FONCTION QUE JE VOUS AI FOURNIE :
+    render_professional_scoring_module()

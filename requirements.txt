@@ -6,3 +6,4 @@ streamlit
 scikit-learn
 reportlab
 openpyxl
+cryptography

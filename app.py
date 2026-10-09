@@ -11,7 +11,11 @@ import streamlit as st
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 from cryptography.fernet import Fernet
+from fpdf import FPDF
 
+# -----------------------------------------------------------------------------
+# CONFIGURATION DE LA PAGE & DESIGN INSTITUTIONNEL HAUT DE GAMME
+# -----------------------------------------------------------------------------
 st.set_page_config(
     page_title="Plateforme FinTech & Compliance | Standard Suisse & UEMOA",
     layout="wide",
@@ -65,6 +69,9 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+# -----------------------------------------------------------------------------
+# GESTION DES CLÉS DE CHIFFREMENT AES-256 & PISTE D'AUDIT CHAÎNÉE
+# -----------------------------------------------------------------------------
 KEY_FILE = "secret.key"
 DATA_FILE = "audit_suisse_aes256.json"
 SOC_FILE = "soc_security_logs.json"
@@ -180,6 +187,9 @@ def verifier_listes_sanctions(nom_client):
             return True
     return False
 
+# -----------------------------------------------------------------------------
+# AUTHENTIFICATION FORTE MFA (2FA)
+# -----------------------------------------------------------------------------
 if "authentifie" not in st.session_state:
     st.session_state.authentifie = False
 
@@ -212,6 +222,9 @@ if not st.session_state.authentifie:
                     st.error("Code MFA invalide. Veuillez saisir un code à 6 chiffres valide.")
     st.stop()
 
+# -----------------------------------------------------------------------------
+# EN-TÊTE & CONTEXTE INSTITUTIONNEL
+# -----------------------------------------------------------------------------
 st.markdown("<h1 style='text-align: center; color: #f8fafc; font-weight: 800;'>HUB BANCAIRE INTERNATIONAL & RISQUES (SUISSE - UEMOA)</h1>", unsafe_allow_html=True)
 st.markdown(f"<p style='text-align: center; color: #fde047; font-size: 1.05rem;'>Collaborateur : <b>{st.session_state.username}</b> | Profil : <b>{st.session_state.user_role}</b> | 🔐 HSM / AES-256 Actif</p>", unsafe_allow_html=True)
 
@@ -230,6 +243,9 @@ with col_cfg2:
 
 st.markdown("---")
 
+# -----------------------------------------------------------------------------
+# NAVIGATION CENTRALE
+# -----------------------------------------------------------------------------
 if "active_module" not in st.session_state:
     st.session_state.active_module = "🏠 Tableau de bord"
 
@@ -244,9 +260,9 @@ modules = {
     "📱 Mobile Money": "Scoring Alternatif",
     "🌱 Risque Agricole": "Campagnes Cacao/Café",
     "🌍 PAPSS": "Paiements Transfrontaliers",
-    "📈 Stress-Tests": "Résistance Bancaire",
+    "📈 Stress-Tests": "Résistance Macro & BCEAO",
     "📂 Data Center": "Import Chiffré",
-    "📜 Historique & Audit": "Piste Chaînée & AES-256",
+    "📜 Historique & Audit": "Piste Chaînée & PDF Natif",
     "⚙️ Paramètres": "Paramétrage Global",
 }
 
@@ -273,6 +289,9 @@ def masquer_donnee(valeur_texte, est_sensible=True):
         return "********"
     return valeur_texte
 
+# -----------------------------------------------------------------------------
+# 1. TABLEAU DE BORD
+# -----------------------------------------------------------------------------
 if current_page == "🏠 Tableau de bord":
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("Actifs Sous Gestion (AuM)", "4.8 Mds CHF / 3.2 Mille Mds XOF", delta="+4.2%")
@@ -296,6 +315,9 @@ if current_page == "🏠 Tableau de bord":
         fig_pie.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
         st.plotly_chart(fig_pie, use_container_width=True)
 
+# -----------------------------------------------------------------------------
+# 2. BANQUE & CRÉDIT
+# -----------------------------------------------------------------------------
 elif current_page == "💳 Banque & Crédit":
     st.markdown("#### Modèle Prédictif de Solvabilité, Explicabilité IA & Workflow Maker-Checker")
     
@@ -358,6 +380,9 @@ elif current_page == "💳 Banque & Crédit":
         enregistrer_log_soc(f"Création de dossier de crédit {dossier['id']} - Statut: {decis_finale}", "INFO")
         st.success(f"✅ Dossier `{dossier['id']}` sécurisé, chiffré en AES-256 et consigné.")
 
+# -----------------------------------------------------------------------------
+# 3. PROVISIONS BCEAO / UEMOA
+# -----------------------------------------------------------------------------
 elif current_page == "📊 Provisions BCEAO":
     st.markdown("#### 📊 Classification et Calcul des Provisions Réglementaires (Normes BCEAO / UEMOA)")
     
@@ -404,6 +429,9 @@ elif current_page == "📊 Provisions BCEAO":
         enregistrer_log_soc(f"Calcul de provision BCEAO enregistré pour {encours_credit:,.0f} (Classe: {classe_bceao})", "INFO")
         st.success(f"✅ Provision de `{montant_provision:,.0f}` enregistrée et chiffrée avec succès.")
 
+# -----------------------------------------------------------------------------
+# 4. SÛRETÉS & GARANTIES
+# -----------------------------------------------------------------------------
 elif current_page == "🏛️ Sûretés & Garanties":
     st.markdown("#### 🏛️ Gestion des Sûretés, Nantissements et Hypothèques (Décote / Haircut)")
     
@@ -442,6 +470,9 @@ elif current_page == "🏛️ Sûretés & Garanties":
         enregistrer_log_soc(f"Enregistrement de sûreté ({nature_garantie}) d'une valeur nette de {valeur_nette_garantie:,.0f}", "INFO")
         st.success(f"✅ Sûreté enregistrée avec succès sous l'identifiant `{dossier_surete['id']}`.")
 
+# -----------------------------------------------------------------------------
+# 5. ANTI-FRAUDE & TRAÇAGE
+# -----------------------------------------------------------------------------
 elif current_page == "🚨 Anti-Fraude & Traçage":
     st.markdown("#### 🕵️‍♂️ Traçage des Sauts Financiers & Gel Automatisé")
     col_tr1, col_tr2 = st.columns(2)
@@ -485,6 +516,9 @@ elif current_page == "🚨 Anti-Fraude & Traçage":
         enregistrer_log_soc(f"ALERTE ROUGE : Gel de transaction {id_transaction} pour un montant de {montant_initial:,.0f}", "CRITICAL")
         st.error(f"🛑 ORDRE DE SÉQUESTRE EXÉCUTÉ sous l'ID `{alerte_id}`. Comptes gelés en temps réel.")
 
+# -----------------------------------------------------------------------------
+# 6. CONFORMITÉ LBA
+# -----------------------------------------------------------------------------
 elif current_page == "🛡️ Conformité LBA":
     st.markdown("#### 🛡️ Conformité LBA & Screening Automatique des Listes de Sanctions (SECO / OFAC / ONU)")
     c_kyc1, c_kyc2 = st.columns(2)
@@ -524,15 +558,15 @@ elif current_page == "🛡️ Conformité LBA":
         else:
             st.error(f"🛑 Alerte Compliance : Le dossier `{dossier_kyc['id']}` a été consigné avec un statut de blocage.")
 
+# -----------------------------------------------------------------------------
+# 7. SOC (SÉCURITÉ)
+# -----------------------------------------------------------------------------
 elif current_page == "🚨 SOC (Sécurité)":
     st.markdown("#### 🛡️ Centre d'Opérations de Sécurité (SOC) — Journal des Événements et Intrusions")
-    st.markdown("<p style='color: #cbd5e1;'>Surveillance en temps réel des accès au système, des tentatives d'authentification et des opérations sensibles.</p>", unsafe_allow_html=True)
-
     logs_soc = charger_logs_soc()
     if logs_soc:
         df_soc = pd.DataFrame(logs_soc)
         st.dataframe(df_soc, use_container_width=True)
-
         col_soc1, col_soc2 = st.columns(2)
         with col_soc1:
             csv_soc = df_soc.to_csv(index=False).encode('utf-8')
@@ -546,6 +580,9 @@ elif current_page == "🚨 SOC (Sécurité)":
     else:
         st.info("Aucun événement de sécurité consigné pour le moment.")
 
+# -----------------------------------------------------------------------------
+# 8. MOBILE MONEY
+# -----------------------------------------------------------------------------
 elif current_page == "📱 Mobile Money":
     st.markdown("#### Scoring Alternatif Digital (Orange Money / Wave / MTN MoMo)")
     flux = st.number_input("Encaissements 3 derniers mois", value=4000000)
@@ -555,7 +592,10 @@ elif current_page == "📱 Mobile Money":
     st.metric("Score Digital Alternatif", f"{int(score)} / 950 points")
     st.success("🌟 Profil validé pour l'octroi d'une ligne de micro-crédit mobile.")
 
-elif current_page == "Risque Agricole" or current_page == "🌱 Risque Agricole":
+# -----------------------------------------------------------------------------
+# 9. RISQUE AGRICOLE
+# -----------------------------------------------------------------------------
+elif current_page == "🌱 Risque Agricole":
     st.markdown("#### Modélisation Agricole & Campagnes (Cacao / Café / Anacarde)")
     surf = st.number_input("Surface exploitée (Hectares)", value=10.0)
     rend = st.number_input("Rendement moyen (Kg/Ha)", value=800)
@@ -563,6 +603,9 @@ elif current_page == "Risque Agricole" or current_page == "🌱 Risque Agricole"
     rev = surf * rend * prix
     st.metric("Revenu Net Estimé de la Campagne", f"{rev:,.0f}")
 
+# -----------------------------------------------------------------------------
+# 10. PAPSS
+# -----------------------------------------------------------------------------
 elif current_page == "🌍 PAPSS":
     st.markdown("#### Paiements & Règlements Panafricains Transfrontaliers (PAPSS)")
     montant_xof = st.number_input("Montant à transférer", value=10000000)
@@ -571,12 +614,41 @@ elif current_page == "🌍 PAPSS":
         enregistrer_log_soc(f"Transfert PAPSS exécuté pour {montant_xof:,.0f} vers {devise_cible}", "INFO")
         st.success("✅ Règlement transfrontalier exécuté avec succès en monnaies locales.")
 
+# -----------------------------------------------------------------------------
+# 11. STRESS-TESTS MACROÉCONOMIQUES (NOUVEAU)
+# -----------------------------------------------------------------------------
 elif current_page == "📈 Stress-Tests":
-    st.markdown("#### Analyse de Résistance Bancaire (Stress-Tests BCEAO / FINMA)")
-    choc = st.slider("Choc de baisse des marchés / matières premières (%)", 0, 70, 30)
-    stage = "Stage 1 (Sain)" if choc < 25 else ("Stage 2 (Surveillance)" if choc < 50 else "Stage 3 (Défaut / Provisionnement lourd)")
-    st.metric("Classification Prudentielle Globale", stage)
+    st.markdown("#### 📈 Moteur de Stress-Test Macroéconomique (BCEAO & Cours des Matières Premières)")
+    st.markdown("<p style='color: #cbd5e1;'>Simulation de résistance du portefeuille face à un choc sur les taux directeurs de la BCEAO et le prix du Cacao / Café.</p>", unsafe_allow_html=True)
 
+    col_st1, col_st2 = st.columns(2)
+    with col_st1:
+        hausse_taux_bceao = st.slider("Augmentation du taux directeur BCEAO (Points de base)", 0, 300, 75)
+        chute_cacao = st.slider("Baisse du cours international du Cacao / Café (%)", 0, 50, 20)
+    with col_st2:
+        portefeuille_total_milliards = st.number_input("Encours Global du Portefeuille (Milliards XOF)", value=150.0)
+
+    # Calcul de l'impact macroéconomique
+    impact_taux_pct = hausse_taux_bceao * 0.04
+    impact_cacao_pct = chute_cacao * 0.85
+    impact_total_defaut_pct = min(100.0, impact_taux_pct + impact_cacao_pct)
+    
+    montant_creances_compromises = portefeuille_total_milliards * (impact_total_defaut_pct / 100)
+    exigence_fonds_propres_sup = montant_creances_compromises * 0.50
+
+    st.markdown("---")
+    ms1, ms2, ms3 = st.columns(3)
+    ms1.metric("Augmentation du Taux de Défaut Global", f"+{impact_total_defaut_pct:.2f}%", delta="Stress Sévère", delta_color="inverse")
+    ms2.metric("Créances à Risque / Compromises", f"{montant_creances_compromises:.2f} Mds XOF")
+    ms3.metric("Besoin Additionnel Fonds Propres Tier-1", f"{exigence_fonds_propres_sup:.2f} Mds XOF")
+
+    if st.button("📊 Générer le Rapport de Stress-Test Macroéconomique"):
+        enregistrer_log_soc(f"Exécution d'un stress-test macroéconomique (Hausse taux: {hausse_taux_bceao} pb, Chute cacao: {chute_cacao}%)", "WARNING")
+        st.success("✅ Simulation macroéconomique enregistrée et validée pour le rapport prudentiel.")
+
+# -----------------------------------------------------------------------------
+# 12. DATA CENTER
+# -----------------------------------------------------------------------------
 elif current_page == "📂 Data Center":
     st.markdown("#### Importation de Portefeuille & Registre Chiffré AES-256")
     uploaded_file = st.file_uploader("Importer un fichier chiffré (CSV / Excel)", type=["csv", "xlsx"])
@@ -588,8 +660,11 @@ elif current_page == "📂 Data Center":
         except Exception as e:
             st.error(f"Erreur : {e}")
 
+# -----------------------------------------------------------------------------
+# 13. HISTORIQUE & AUDIT (AVEC GÉNÉRATION PDF NATIF)
+# -----------------------------------------------------------------------------
 elif current_page == "📜 Historique & Audit":
-    st.markdown("#### 🔒 Piste d'Audit Inviolable (Chiffrement AES-256 & Chaînage SHA-256)")
+    st.markdown("#### 🔒 Piste d'Audit Inviolable (Chiffrement AES-256 & Génération PDF Certifié)")
     historique = charger_historique()
     if historique:
         df_hist = pd.DataFrame(historique)
@@ -603,35 +678,46 @@ elif current_page == "📜 Historique & Audit":
         with col_exp2:
             if historique:
                 dossier = historique[0]
-                html_report = f"""
-                <html>
-                <head><meta charset="utf-8"><title>Rapport d'Audit Sécurisé</title></head>
-                <body style="font-family: Arial, sans-serif; padding: 30px; color: #0f172a; background: #f8fafc;">
-                    <div style="max-width: 700px; margin: auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-                        <h2 style="color: #0f172a; text-align: center;">ATTESTATION OFFICIELLE DE CONFORMITÉ FINMA & BCEAO</h2>
-                        <p style="text-align: center; color: #64748b;">Standards Bancaires Internationaux — Données Chiffrées au Repos (AES-256)</p>
-                        <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;">
-                        <p><b>ID Enregistrement :</b> {dossier.get('id')}</p>
-                        <p><b>Horodatage UTC :</b> {dossier.get('date')}</p>
-                        <p><b>Client / Actif (Déchiffré) :</b> {dossier.get('client')}</p>
-                        <p><b>Montant :</b> {dossier.get('montant'):,.0f}</p>
-                        <p><b>Décision / Statut :</b> <span style="color: {'green' if 'APPROUVÉ' in dossier.get('decis') or 'VALIDÉ' in dossier.get('decis') or 'PROVISIONNÉ' in dossier.get('decis') else 'red'}; font-weight: bold;">{dossier.get('decis')}</span></p>
-                        <p><b>Empreinte Cryptographique (SHA-256) :</b> <code style="font-size: 0.75rem;">{dossier.get('hash_actuel')}</code></p>
-                        <br>
-                        <p style="font-size: 0.9rem; color: #475569;"><i>Ce document certifie le chiffrement AES-256 et l'intégrité absolue de la piste d'audit réglementaire.</i></p>
-                    </div>
-                </body>
-                </html>
-                """
+                
+                # Génération du PDF natif via FPDF
+                def generer_pdf_bytes(d):
+                    pdf = FPDF()
+                    pdf.add_page()
+                    pdf.set_font("Arial", "B", 16)
+                    pdf.cell(0, 10, "ATTESTATION OFFICIELLE DE CONFORMITE FINMA & BCEAO", ln=True, align="C")
+                    pdf.set_font("Arial", "", 10)
+                    pdf.cell(0, 8, "Standards Bancaires Internationaux - Chiffrement AES-256 au Repos", ln=True, align="C")
+                    pdf.ln(10)
+                    
+                    pdf.set_font("Arial", "B", 12)
+                    pdf.cell(0, 8, f"ID Enregistrement : {d.get('id')}", ln=True)
+                    pdf.cell(0, 8, f"Horodatage UTC : {d.get('date')}", ln=True)
+                    pdf.cell(0, 8, f"Client / Actif (Déchiffré) : {d.get('client')}", ln=True)
+                    pdf.cell(0, 8, f"Montant : {d.get('montant'):,.0f}", ln=True)
+                    pdf.cell(0, 8, f"Décision / Statut : {d.get('decis')}", ln=True)
+                    pdf.ln(5)
+                    pdf.set_font("Arial", "B", 10)
+                    pdf.cell(0, 6, "Empreinte Cryptographique (SHA-256) :", ln=True)
+                    pdf.set_font("Arial", "", 8)
+                    pdf.multi_cell(0, 5, f"{d.get('hash_actuel')}")
+                    pdf.ln(15)
+                    pdf.set_font("Arial", "I", 9)
+                    pdf.cell(0, 6, "Ce document certifie le chiffrement AES-256 et l'integrite absolue de la piste d'audit.", ln=True, align="C")
+                    return bytes(pdf.output())
+
+                pdf_bytes = generer_pdf_bytes(dossier)
                 st.download_button(
-                    "📄 Télécharger le Rapport d'Audit (HTML Imprimable)",
-                    data=html_report,
-                    file_name=f"Rapport_Audit_{dossier.get('id')}.html",
-                    mime="text/html"
+                    "📄 Télécharger le Rapport Certifié au Format PDF Natif",
+                    data=pdf_bytes,
+                    file_name=f"Attestation_Audit_{dossier.get('id')}.pdf",
+                    mime="application/pdf"
                 )
     else:
         st.info("Aucune transaction enregistrée dans le registre chiffré.")
 
+# -----------------------------------------------------------------------------
+# 14. PARAMÈTRES
+# -----------------------------------------------------------------------------
 elif current_page == "⚙️ Paramètres":
     st.markdown("#### Paramètres Généraux de la Plateforme")
     st.text_input("Responsable Technique / Risk Manager", value="Kouassi Kouame Daniel")

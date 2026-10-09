@@ -3,6 +3,7 @@ import json
 import os
 import uuid
 import hashlib
+import requests
 import numpy as np
 import pandas as pd
 import plotly.express as px
@@ -146,6 +147,25 @@ def charger_memoire():
             return []
     return []
 
+# Fonction d'envoi réel WhatsApp via l'API Meta
+def envoyer_whatsapp_reel(phone_number_id, token_acces, telephone_destinataire, message_texte):
+    url = f"https://graph.facebook.com/v17.0/{phone_number_id}/messages"
+    headers = {
+        "Authorization": f"Bearer {token_acces}",
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "messaging_product": "whatsapp",
+        "to": telephone_destinataire.replace("+", "").replace(" ", ""),
+        "type": "text",
+        "text": {"body": message_texte}
+    }
+    try:
+        reponse = requests.post(url, headers=headers, json=payload)
+        return reponse.status_code == 200, reponse.json()
+    except Exception as e:
+        return False, str(e)
+
 # -----------------------------------------------------------------------------
 # AUTHENTIFICATION & SESSION
 # -----------------------------------------------------------------------------
@@ -236,7 +256,7 @@ elif st.session_state.espace_actif == "Dashboard":
     c1.metric("Opérations Enregistrées", len(charger_memoire()), delta="Actif")
     c2.metric("Conformité SYSCOHADA", "100%", delta="Optimal")
     c3.metric("Rapprochements Paiements", "99.1%", delta="+1.8%")
-    c4.metric("Alertes WhatsApp", "12 Envoyées", delta="Actif")
+    c4.metric("Notifications WhatsApp", "Actif", delta="API Prête")
 
     st.markdown("---")
     col_d1, col_d2 = st.columns(2)
@@ -280,32 +300,46 @@ elif st.session_state.espace_actif == "Paiements":
             st.success(f"✅ Encaissement de `{montant_enc:,.0f} FCFA` validé et rapproché avec succès.")
 
 # -----------------------------------------------------------------------------
-# 4. ESPACE : WHATSAPP BUSINESS AUTOMATISATION
+# 4. ESPACE : WHATSAPP BUSINESS AUTOMATISATION (RÉEL VIA API META)
 # -----------------------------------------------------------------------------
 elif st.session_state.espace_actif == "WhatsApp":
-    st.markdown("<h2>💬 Automatisation WhatsApp Business (Reçus & Rappels)</h2>", unsafe_allow_html=True)
-    st.markdown("Envoyez instantanément des reçus de paiement, des confirmations de commande ou des rappels d'impayés à vos clients via WhatsApp.")
+    st.markdown("<h2>💬 Automatisation WhatsApp Business (Envoi Réel)</h2>", unsafe_allow_html=True)
+    st.markdown("Envoyez de vrais messages WhatsApp à vos clients via l'API Cloud officielle de Meta.")
 
-    with st.form("form_whatsapp"):
+    with st.form("form_whatsapp_reel"):
+        st.subheader("⚙️ Configuration des Identifiants Meta WhatsApp API")
+        c_api1, c_api2 = st.columns(2)
+        with c_api1:
+            phone_id_input = st.text_input("Phone Number ID (Fourni par Meta)", value="", placeholder="Ex: 10593849...")
+        with c_api2:
+            token_input = st.text_input("Access Token Permanent ou Temporaire", value="", type="password", placeholder="EAAG...")
+
+        st.markdown("---")
+        st.subheader("📤 Paramètres du Message")
         c1, c2 = st.columns(2)
         with c1:
-            destinataire = st.text_input("Nom du Client / Destinataire", value="Entreprise Kouassi & Cie")
-            telephone = st.text_input("Numéro WhatsApp (Format international)", value="+225 0700000000")
-            type_msg = st.selectbox("Type de Message Automatisé", [
+            destinataire = st.text_input("Numéro WhatsApp du Destinataire (Format international)", value="+2250700000000")
+            type_msg = st.selectbox("Type de Message", [
                 "Reçu de Paiement & Confirmation",
                 "Rappel de Facture Échue (Impayé)",
-                "Confirmation de Commande & Livraison",
-                "Message Personnalisé"
+                "Confirmation de Commande & Livraison"
             ])
         with c2:
             montant_facture = st.number_input("Montant Concerné (FCFA)", value=150000)
-            texte_perso = st.text_area("Aperçu du Message", value="Bonjour, nous vous confirmons la bonne réception de votre paiement de 150.000 FCFA. Merci pour votre confiance ! — Votre Entreprise")
+            texte_msg = st.text_area("Corps du Message", value="Bonjour, nous vous confirmons la bonne réception de votre paiement. Merci pour votre confiance ! — Votre Entreprise")
 
-        btn_envoi = st.form_submit_button("📤 Envoyer la Notification WhatsApp Business")
-        if btn_envoi:
-            details = f"Envoi d'un message WhatsApp ({type_msg}) au {telephone} pour un montant de {montant_facture:,.0f} FCFA"
-            enregistrer_memoire("NOTIFICATION_WHATSAPP", details, st.session_state.username)
-            st.success(f"✅ Message WhatsApp transmis avec succès au numéro `{telephone}` via l'API Business.")
+        btn_envoi_reel = st.form_submit_button("🚀 Envoyer le Message WhatsApp en Réel")
+        if btn_envoi_reel:
+            if not phone_id_input or not token_input:
+                st.error("⚠️ Veuillez renseigner votre 'Phone Number ID' et votre 'Access Token' Meta pour effectuer un envoi réel.")
+            else:
+                succes, resultat = envoyer_whatsapp_reel(phone_id_input, token_input, destinataire, texte_msg)
+                if succes:
+                    details = f"Envoi WhatsApp réussi au {destinataire} (Montant: {montant_facture:,.0f} FCFA)"
+                    enregistrer_memoire("NOTIFICATION_WHATSAPP_REEL", details, st.session_state.username)
+                    st.success(f"✅ Message WhatsApp envoyé avec succès au `{destinataire}` !")
+                else:
+                    st.error(f"❌ Échec de l'envoi via l'API Meta. Vérifiez vos clés et le format du numéro. Détails : {resultat}")
 
 # -----------------------------------------------------------------------------
 # 5. ESPACE : FINANCE & COMPTABILITÉ (SYSCOHADA)
@@ -387,11 +421,11 @@ elif st.session_state.espace_actif == "Audit":
 # -----------------------------------------------------------------------------
 elif st.session_state.espace_actif == "IA":
     st.markdown("<h2>🤖 Assistant IA Central Intelligent</h2>", unsafe_allow_html=True)
-    st.markdown("Posez vos questions. L'assistant analyse les transactions, les paiements Mobile Money et la mémoire opérationnelle.")
+    st.markdown("Posez vos questions. L'assistant analyse les transactions, les paiements et la mémoire opérationnelle.")
 
     if "messages_ia" not in st.session_state:
         st.session_state.messages_ia = [
-            {"role": "assistant", "content": "Bonjour ! Je suis votre Assistant IA Central. Je peux consulter les paiements Wave/Orange, vérifier des tiers ou résumer l'activité. Que souhaitez-vous savoir ?"}
+            {"role": "assistant", "content": "Bonjour ! Je suis votre Assistant IA Central. Je peux consulter les paiements, vérifier des tiers ou résumer l'activité. Que souhaitez-vous savoir ?"}
         ]
 
     for msg in st.session_state.messages_ia:

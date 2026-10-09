@@ -1,0 +1,16 @@
+import streamlit as st
+
+# 1. (Collez la fonction def render_professional_scoring_module(): ici, après les imports)
+
+# 2. Dans votre gestion des onglets :
+tab_accueil, tab_scoring, tab_autre = st.tabs(["Accueil", "Scoring Professionnel", "Paramètres"])
+
+with tab_accueil:
+    st.title("Bienvenue")
+
+with tab_scoring:
+    # C'ICI QU'IL FAUT APPELER LA FONCTION :
+    render_professional_scoring_module()
+
+with tab_autre:
+    st.write("Autres options...")

@@ -11,7 +11,6 @@ import streamlit as st
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 from cryptography.fernet import Fernet
-from fpdf import FPDF
 
 # -----------------------------------------------------------------------------
 # CONFIGURATION DE LA PAGE & DESIGN INSTITUTIONNEL HAUT DE GAMME
@@ -262,7 +261,7 @@ modules = {
     "🌍 PAPSS": "Paiements Transfrontaliers",
     "📈 Stress-Tests": "Résistance Macro & BCEAO",
     "📂 Data Center": "Import Chiffré",
-    "📜 Historique & Audit": "Piste Chaînée & PDF Natif",
+    "📜 Historique & Audit": "Piste Chaînée & Rapport Certifié",
     "⚙️ Paramètres": "Paramétrage Global",
 }
 
@@ -567,162 +566,3 @@ elif current_page == "🚨 SOC (Sécurité)":
     if logs_soc:
         df_soc = pd.DataFrame(logs_soc)
         st.dataframe(df_soc, use_container_width=True)
-        col_soc1, col_soc2 = st.columns(2)
-        with col_soc1:
-            csv_soc = df_soc.to_csv(index=False).encode('utf-8')
-            st.download_button("📥 Télécharger les Logs de Sécurité (CSV)", data=csv_soc, file_name="soc_security_audit_logs.csv", mime="text/csv")
-        with col_soc2:
-            if st.button("🧹 Vider le Journal des Logs SOC (Test)"):
-                if os.path.exists(SOC_FILE):
-                    os.remove(SOC_FILE)
-                st.success("Journal SOC réinitialisé.")
-                st.rerun()
-    else:
-        st.info("Aucun événement de sécurité consigné pour le moment.")
-
-# -----------------------------------------------------------------------------
-# 8. MOBILE MONEY
-# -----------------------------------------------------------------------------
-elif current_page == "📱 Mobile Money":
-    st.markdown("#### Scoring Alternatif Digital (Orange Money / Wave / MTN MoMo)")
-    flux = st.number_input("Encaissements 3 derniers mois", value=4000000)
-    anciennete = st.slider("Ancienneté du compte (Mois)", 1, 36, 12)
-    solde_nuit = st.number_input("Solde moyen de nuit", value=300000)
-    score = 500 + (anciennete * 10) + (solde_nuit / 2000)
-    st.metric("Score Digital Alternatif", f"{int(score)} / 950 points")
-    st.success("🌟 Profil validé pour l'octroi d'une ligne de micro-crédit mobile.")
-
-# -----------------------------------------------------------------------------
-# 9. RISQUE AGRICOLE
-# -----------------------------------------------------------------------------
-elif current_page == "🌱 Risque Agricole":
-    st.markdown("#### Modélisation Agricole & Campagnes (Cacao / Café / Anacarde)")
-    surf = st.number_input("Surface exploitée (Hectares)", value=10.0)
-    rend = st.number_input("Rendement moyen (Kg/Ha)", value=800)
-    prix = st.number_input("Prix d'achat garanti (FCFA / kg)", value=1800)
-    rev = surf * rend * prix
-    st.metric("Revenu Net Estimé de la Campagne", f"{rev:,.0f}")
-
-# -----------------------------------------------------------------------------
-# 10. PAPSS
-# -----------------------------------------------------------------------------
-elif current_page == "🌍 PAPSS":
-    st.markdown("#### Paiements & Règlements Panafricains Transfrontaliers (PAPSS)")
-    montant_xof = st.number_input("Montant à transférer", value=10000000)
-    devise_cible = st.selectbox("Devise Destinataire", ["NGN", "GHS", "KES", "USD"])
-    if st.button("💱 Exécuter le Transfert Panafricain Instantané"):
-        enregistrer_log_soc(f"Transfert PAPSS exécuté pour {montant_xof:,.0f} vers {devise_cible}", "INFO")
-        st.success("✅ Règlement transfrontalier exécuté avec succès en monnaies locales.")
-
-# -----------------------------------------------------------------------------
-# 11. STRESS-TESTS MACROÉCONOMIQUES (NOUVEAU)
-# -----------------------------------------------------------------------------
-elif current_page == "📈 Stress-Tests":
-    st.markdown("#### 📈 Moteur de Stress-Test Macroéconomique (BCEAO & Cours des Matières Premières)")
-    st.markdown("<p style='color: #cbd5e1;'>Simulation de résistance du portefeuille face à un choc sur les taux directeurs de la BCEAO et le prix du Cacao / Café.</p>", unsafe_allow_html=True)
-
-    col_st1, col_st2 = st.columns(2)
-    with col_st1:
-        hausse_taux_bceao = st.slider("Augmentation du taux directeur BCEAO (Points de base)", 0, 300, 75)
-        chute_cacao = st.slider("Baisse du cours international du Cacao / Café (%)", 0, 50, 20)
-    with col_st2:
-        portefeuille_total_milliards = st.number_input("Encours Global du Portefeuille (Milliards XOF)", value=150.0)
-
-    # Calcul de l'impact macroéconomique
-    impact_taux_pct = hausse_taux_bceao * 0.04
-    impact_cacao_pct = chute_cacao * 0.85
-    impact_total_defaut_pct = min(100.0, impact_taux_pct + impact_cacao_pct)
-    
-    montant_creances_compromises = portefeuille_total_milliards * (impact_total_defaut_pct / 100)
-    exigence_fonds_propres_sup = montant_creances_compromises * 0.50
-
-    st.markdown("---")
-    ms1, ms2, ms3 = st.columns(3)
-    ms1.metric("Augmentation du Taux de Défaut Global", f"+{impact_total_defaut_pct:.2f}%", delta="Stress Sévère", delta_color="inverse")
-    ms2.metric("Créances à Risque / Compromises", f"{montant_creances_compromises:.2f} Mds XOF")
-    ms3.metric("Besoin Additionnel Fonds Propres Tier-1", f"{exigence_fonds_propres_sup:.2f} Mds XOF")
-
-    if st.button("📊 Générer le Rapport de Stress-Test Macroéconomique"):
-        enregistrer_log_soc(f"Exécution d'un stress-test macroéconomique (Hausse taux: {hausse_taux_bceao} pb, Chute cacao: {chute_cacao}%)", "WARNING")
-        st.success("✅ Simulation macroéconomique enregistrée et validée pour le rapport prudentiel.")
-
-# -----------------------------------------------------------------------------
-# 12. DATA CENTER
-# -----------------------------------------------------------------------------
-elif current_page == "📂 Data Center":
-    st.markdown("#### Importation de Portefeuille & Registre Chiffré AES-256")
-    uploaded_file = st.file_uploader("Importer un fichier chiffré (CSV / Excel)", type=["csv", "xlsx"])
-    if uploaded_file is not None:
-        try:
-            df_imported = pd.read_csv(uploaded_file) if uploaded_file.name.endswith('.csv') else pd.read_excel(uploaded_file)
-            st.success(f"✅ Fichier '{uploaded_file.name}' déchiffré et analysé avec succès !")
-            st.dataframe(df_imported.head(10), use_container_width=True)
-        except Exception as e:
-            st.error(f"Erreur : {e}")
-
-# -----------------------------------------------------------------------------
-# 13. HISTORIQUE & AUDIT (AVEC GÉNÉRATION PDF NATIF)
-# -----------------------------------------------------------------------------
-elif current_page == "📜 Historique & Audit":
-    st.markdown("#### 🔒 Piste d'Audit Inviolable (Chiffrement AES-256 & Génération PDF Certifié)")
-    historique = charger_historique()
-    if historique:
-        df_hist = pd.DataFrame(historique)
-        st.dataframe(df_hist, use_container_width=True)
-
-        col_exp1, col_exp2 = st.columns(2)
-        with col_exp1:
-            csv_data = df_hist.to_csv(index=False).encode('utf-8')
-            st.download_button("📥 Télécharger la Piste d'Audit (CSV)", data=csv_data, file_name="piste_audit_uemoa_suisse.csv", mime="text/csv")
-
-        with col_exp2:
-            if historique:
-                dossier = historique[0]
-                
-                # Génération du PDF natif via FPDF
-                def generer_pdf_bytes(d):
-                    pdf = FPDF()
-                    pdf.add_page()
-                    pdf.set_font("Arial", "B", 16)
-                    pdf.cell(0, 10, "ATTESTATION OFFICIELLE DE CONFORMITE FINMA & BCEAO", ln=True, align="C")
-                    pdf.set_font("Arial", "", 10)
-                    pdf.cell(0, 8, "Standards Bancaires Internationaux - Chiffrement AES-256 au Repos", ln=True, align="C")
-                    pdf.ln(10)
-                    
-                    pdf.set_font("Arial", "B", 12)
-                    pdf.cell(0, 8, f"ID Enregistrement : {d.get('id')}", ln=True)
-                    pdf.cell(0, 8, f"Horodatage UTC : {d.get('date')}", ln=True)
-                    pdf.cell(0, 8, f"Client / Actif (Déchiffré) : {d.get('client')}", ln=True)
-                    pdf.cell(0, 8, f"Montant : {d.get('montant'):,.0f}", ln=True)
-                    pdf.cell(0, 8, f"Décision / Statut : {d.get('decis')}", ln=True)
-                    pdf.ln(5)
-                    pdf.set_font("Arial", "B", 10)
-                    pdf.cell(0, 6, "Empreinte Cryptographique (SHA-256) :", ln=True)
-                    pdf.set_font("Arial", "", 8)
-                    pdf.multi_cell(0, 5, f"{d.get('hash_actuel')}")
-                    pdf.ln(15)
-                    pdf.set_font("Arial", "I", 9)
-                    pdf.cell(0, 6, "Ce document certifie le chiffrement AES-256 et l'integrite absolue de la piste d'audit.", ln=True, align="C")
-                    return bytes(pdf.output())
-
-                pdf_bytes = generer_pdf_bytes(dossier)
-                st.download_button(
-                    "📄 Télécharger le Rapport Certifié au Format PDF Natif",
-                    data=pdf_bytes,
-                    file_name=f"Attestation_Audit_{dossier.get('id')}.pdf",
-                    mime="application/pdf"
-                )
-    else:
-        st.info("Aucune transaction enregistrée dans le registre chiffré.")
-
-# -----------------------------------------------------------------------------
-# 14. PARAMÈTRES
-# -----------------------------------------------------------------------------
-elif current_page == "⚙️ Paramètres":
-    st.markdown("#### Paramètres Généraux de la Plateforme")
-    st.text_input("Responsable Technique / Risk Manager", value="Kouassi Kouame Daniel")
-    st.text_input("Institution de Rattachement", value="Apex Institute of Management (MBA Data Science & AI)")
-    if st.button("Se déconnecter de la session sécurisée"):
-        enregistrer_log_soc(f"Déconnexion de {st.session_state.username}", "INFO")
-        st.session_state.authentifie = False
-        st.rerun()

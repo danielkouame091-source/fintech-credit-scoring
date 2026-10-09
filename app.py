@@ -2,7 +2,10 @@ import datetime
 import hashlib
 import json
 import os
+import smtplib
 import uuid
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 import numpy as np
 import pandas as pd
 import plotly.express as px
@@ -98,10 +101,11 @@ st.markdown(
 )
 
 # -----------------------------------------------------------------------------
-# GESTION DU STOCKAGE SÉCURISÉ & MÉMOIRE OPÉRATIONNELLE (AES-256)
+# GESTION DU STOCKAGE SÉCURISÉ & PISTE D'AUDIT IMMUABLE (AES-256 & SHA-256)
 # -----------------------------------------------------------------------------
 KEY_FILE = "mac_enterprise_secret.key"
 AUDIT_FILE = "memoire_operations_ci.json"
+TIERS_FILE = "annuaire_tiers.json"
 
 
 def obtenir_cle():
@@ -154,40 +158,97 @@ def charger_memoire():
   return []
 
 
-# Fonction d'envoi WhatsApp hybride (Réel API Meta ou Mode Simulation fluide)
-def envoyer_whatsapp_hybride(
-    phone_number_id, token_acces, telephone_destinataire, message_texte
-):
-  clean_phone = telephone_destinataire.strip().replace("+", "").replace(" ", "")
-
-  # Vérification si les clés fournies sont de véritables clés Meta valides
-  is_real_config = phone_number_id and token_acces and phone_number_id.isdigit() and token_acces.startswith("EAAG")
-
-  if is_real_config:
-    url = f"https://graph.facebook.com/v17.0/{phone_number_id}/messages"
-    headers = {
-        "Authorization": f"Bearer {token_acces}",
-        "Content-Type": "application/json",
-    }
-    payload = {
-        "messaging_product": "whatsapp",
-        "to": clean_phone,
-        "type": "text",
-        "text": {"body": message_texte},
-    }
+def charger_tiers():
+  if os.path.exists(TIERS_FILE):
     try:
-      reponse = requests.post(url, headers=headers, json=payload)
-      if reponse.status_code == 200:
-        return True, "Envoi réel réussi via l'API Meta Cloud."
-      else:
-        return False, f"Erreur API Meta : {reponse.text}"
-    except Exception as e:
-      return False, str(e)
-  else:
-    # Mode Simulation pro immédiat (pas de blocage si les clés Meta ne sont pas configurées)
-    import time
-    time.sleep(0.5)
-    return True, "Simulation officielle validée (Mode Démo / Hors-ligne actif)."
+      with open(TIERS_FILE, "r", encoding="utf-8") as f:
+        return json.load(f)
+    except:
+      return []
+  # Tiers par défaut si vide
+  return [{
+      "nom": "Kouadio & Frères SARL",
+      "rccm": "CI-ABJ-2024-B-9876",
+      "ifu": "2009876 K",
+      "contact": "2250700000000",
+      "email": "contact@kouadiofreres.ci",
+  }]
+
+
+def sauvegarder_tiers(liste_tiers):
+  with open(TIERS_FILE, "w", encoding="utf-8") as f:
+    json.dump(liste_tiers, f, ensure_ascii=False, indent=4)
+
+
+# -----------------------------------------------------------------------------
+# FONCTIONS RÉELLES : WHATSAPP (API META CLOUD) & E-MAIL (SMTP SÉCURISÉ)
+# -----------------------------------------------------------------------------
+def envoyer_whatsapp_reel(
+    telephone_destinataire, message_texte
+):
+  # Récupération sécurisée depuis les variables d'environnement du serveur
+  phone_number_id = os.environ.get("WHATSAPP_PHONE_NUMBER_ID", "").strip()
+  access_token = os.environ.get("WHATSAPP_ACCESS_TOKEN", "").strip()
+
+  if not phone_number_id or not access_token:
+    return (
+        False,
+        "Configuration requise : Les variables d'environnement"
+        " WHATSAPP_PHONE_NUMBER_ID et WHATSAPP_ACCESS_TOKEN ne sont pas"
+        " configurées sur le serveur.",
+    )
+
+  clean_phone = telephone_destinataire.strip().replace("+", "").replace(" ", "")
+  url = f"https://graph.facebook.com/v17.0/{phone_number_id}/messages"
+  headers = {
+      "Authorization": f"Bearer {access_token}",
+      "Content-Type": "application/json",
+  }
+  payload = {
+      "messaging_product": "whatsapp",
+      "to": clean_phone,
+      "type": "text",
+      "text": {"body": message_texte},
+  }
+
+  try:
+    reponse = requests.post(url, headers=headers, json=payload, timeout=10)
+    if reponse.status_code == 200:
+      return True, "Message transmis et distribué par l'API Cloud Meta."
+    else:
+      return False, f"Erreur API Meta ({reponse.status_code}): {reponse.text}"
+  except Exception as e:
+    return False, f"Échec de connexion réseau vers l'API Meta : {str(e)}"
+
+
+def envoyer_email_reel(destinataire_email, objet, corps):
+  smtp_server = os.environ.get("SMTP_SERVER", "smtp.gmail.com")
+  smtp_port = int(os.environ.get("SMTP_PORT", 587))
+  sender_email = os.environ.get("SMTP_SENDER_EMAIL", "").strip()
+  sender_password = os.environ.get("SMTP_SENDER_PASSWORD", "").strip()
+
+  if not sender_email or not sender_password:
+    return (
+        False,
+        "Configuration requise : Les identifiants SMTP (SMTP_SENDER_EMAIL et"
+        " SMTP_SENDER_PASSWORD) ne sont pas configurés sur le serveur.",
+    )
+
+  try:
+    msg = MIMEMultipart()
+    msg["From"] = sender_email
+    msg["To"] = destinataire_email
+    msg["Subject"] = objet
+    msg.attach(MIMEText(corps, "plain", "utf-8"))
+
+    server = smtplib.SMTP(smtp_server, smtp_port, timeout=10)
+    server.starttls()
+    server.login(sender_email, sender_password)
+    server.sendmail(sender_email, destinataire_email, msg.as_string())
+    server.quit()
+    return True, "E-mail accepté et transmis par le serveur SMTP."
+  except Exception as e:
+    return False, f"Échec d'envoi SMTP : {str(e)}"
 
 
 # -----------------------------------------------------------------------------
@@ -204,7 +265,7 @@ if not st.session_state.authentifie:
   )
   st.markdown(
       "<p style='text-align: center; color: #94a3b8;'>Expérience macOS"
-      " Workspace, Agrégation Mobile Money & WhatsApp Business</p>",
+      " Workspace, Agrégation Mobile Money & Connexions Réelles</p>",
       unsafe_allow_html=True,
   )
 
@@ -249,7 +310,7 @@ st.markdown(
     f"""
 <div class="macos-header">
     <div><b>🍎 Workspace CI</b> | Utilisateur : <b>{st.session_state.username}</b> ({st.session_state.user_role})</div>
-    <div>🔐 Chiffrement AES-256 Actif &nbsp;|&nbsp; 🟢 Système Opérationnel</div>
+    <div>🔐 Chiffrement AES-256 &nbsp;|&nbsp; 🟢 Connexions Réelles Actives</div>
 </div>
 """,
     unsafe_allow_html=True,
@@ -283,9 +344,9 @@ if st.session_state.espace_actif == "Launchpad":
           "cle": "Paiements",
       },
       {
-          "nom": "💬 WhatsApp Business",
-          "desc": "Automatisation reçus & rappels clients",
-          "cle": "WhatsApp",
+          "nom": "💬 WhatsApp & E-mails",
+          "desc": "Envois réels API Meta & SMTP Sécurisé",
+          "cle": "Communications",
       },
       {
           "nom": "📊 Finance & Comptabilité",
@@ -342,8 +403,8 @@ elif st.session_state.espace_actif == "Dashboard":
   c1, c2, c3, c4 = st.columns(4)
   c1.metric("Opérations Enregistrées", len(charger_memoire()), delta="Actif")
   c2.metric("Conformité SYSCOHADA", "100%", delta="Optimal")
-  c3.metric("Rapprochements Paiements", "99.1%", delta="+1.8%")
-  c4.metric("Notifications WhatsApp", "Actif", delta="Prêt")
+  c3.metric("Tiers Répertoriés", len(charger_tiers()), delta="Persistant")
+  c4.metric("Canaux de Communication", "Actifs", delta="API & SMTP")
 
   st.markdown("---")
   col_d1, col_d2 = st.columns(2)
@@ -383,16 +444,12 @@ elif st.session_state.espace_actif == "Dashboard":
       st.write("Aucune opération enregistrée pour le moment.")
 
 # -----------------------------------------------------------------------------
-# 3. ESPACE : AGRÉGATEUR DE PAIEMENTS MULTI-OPÉRATEURS
+# 3. ESPACE : AGRÉGATEUR DE PAIEMENTS
 # -----------------------------------------------------------------------------
 elif st.session_state.espace_actif == "Paiements":
   st.markdown(
       "<h2>💳 Agrégateur de Paiements & Rapprochement (Côte d'Ivoire)</h2>",
       unsafe_allow_html=True,
-  )
-  st.markdown(
-      "Centralisez et rapprochez en temps réel tous vos encaissements Mobile"
-      " Money et bancaires."
   )
 
   with st.form("form_paiement"):
@@ -430,91 +487,123 @@ elif st.session_state.espace_actif == "Paiements":
           "ENCAISSEMENT_PAIEMENT", details, st.session_state.username
       )
       st.success(
-          f"✅ Encaissement de `{montant_enc:,.0f} FCFA` validé et rapproché avec"
-          " succès."
+          f"✅ Encaissement de `{montant_enc:,.0f} FCFA` validé, rapproché et"
+          " enregistré dans la base."
       )
 
 # -----------------------------------------------------------------------------
-# 4. ESPACE : WHATSAPP BUSINESS AUTOMATISATION
+# 4. ESPACE : WHATSAPP & E-MAILS (ENVOIS RÉELS CONNECTÉS)
 # -----------------------------------------------------------------------------
-elif st.session_state.espace_actif == "WhatsApp":
+elif st.session_state.espace_actif == "Communications":
   st.markdown(
-      "<h2>💬 Automatisation WhatsApp Business (Envoi Réel & Mode Démo)</h2>",
+      "<h2>💬 Centre de Communication (WhatsApp API & SMTP E-mail)</h2>",
       unsafe_allow_html=True,
   )
   st.markdown(
-      "Envoyez de vrais messages WhatsApp (via API Meta) ou simulez vos envois"
-      " instantanément."
+      "Sélectionnez un tiers dans l'annuaire, rédigez votre message et exécutez"
+      " un envoi réel vérifié."
   )
 
-  with st.form("form_whatsapp_reel"):
-    st.subheader("⚙️ Configuration des Identifiants Meta WhatsApp API")
-    c_api1, c_api2 = st.columns(2)
-    with c_api1:
-      phone_id_input = st.text_input(
-          "Phone Number ID (Fourni par Meta - Optionnel en Démo)",
-          value="",
-          placeholder="Ex: 10593849...",
-      )
-    with c_api2:
-      token_input = st.text_input(
-          "Access Token (Optionnel en Démo)",
-          value="",
-          type="password",
-          placeholder="EAAG...",
-      )
+  tiers_list = charger_tiers()
+  noms_tiers = [t["nom"] for t in tiers_list]
 
-    st.markdown("---")
-    st.subheader("📤 Paramètres du Message")
-    c1, c2 = st.columns(2)
-    with c1:
-      destinataire = st.text_input(
-          "Numéro WhatsApp du Destinataire (Format international)",
-          value="2250700000000",
-      )
-      type_msg = st.selectbox(
-          "Type de Message",
-          [
-              "Reçu de Paiement & Confirmation",
-              "Rappel de Facture Échue (Impayé)",
-              "Confirmation de Commande & Livraison",
-          ],
-      )
-    with c2:
-      montant_facture = st.number_input("Montant Concerné (FCFA)", value=150000)
-      texte_msg = st.text_area(
-          "Corps du Message",
-          value=(
-              "Bonjour, nous vous confirmons la bonne réception de votre"
-              " paiement. Merci pour votre confiance ! — Votre Entreprise"
-          ),
-      )
+  selected_tier_name = st.selectbox(
+      "Sélectionner un Tiers Destinataire", noms_tiers
+  )
+  dest_tier = next(
+      (t for t in tiers_list if t["nom"] == selected_tier_name), tiers_list[0]
+  )
 
-    btn_envoi_reel = st.form_submit_button("🚀 Envoyer le Message WhatsApp")
-    if btn_envoi_reel:
-      succes, resultat = envoyer_whatsapp_hybride(
-          phone_id_input, token_input, destinataire, texte_msg
-      )
+  tab_wa, tab_email = st.tabs(["🚀 Envoi WhatsApp (API Meta)", "📧 Envoi E-mail (SMTP)"])
+
+  with tab_wa:
+    st.markdown("### Canal WhatsApp Officiel")
+    wa_number = st.text_input(
+        "Numéro de Téléphone (Format international)",
+        value=dest_tier.get("contact", "2250700000000"),
+    )
+    wa_msg_type = st.selectbox(
+        "Modèle de Message Professionnel",
+        [
+            (
+                "Confirmation de document : 'Bonjour, nous vous confirmons la"
+                " réception de votre document.'"
+            ),
+            (
+                "Confirmation de paiement : 'Bonjour, nous vous informons que"
+                " votre paiement a bien été enregistré.'"
+            ),
+            (
+                "Dossier incomplet : 'Bonjour, votre dossier est incomplet."
+                " Merci de nous transmettre le document manquant.'"
+            ),
+            (
+                "Rappel d'échéance : 'Bonjour, nous vous rappelons que votre"
+                " facture arrive à échéance.'"
+            ),
+        ],
+    )
+    wa_body = st.text_area(
+        "Corps du Message éditable",
+        value=wa_msg_type.split("'")[1]
+        if "'" in wa_msg_type
+        else "Bonjour, message officiel de l'entreprise.",
+    )
+
+    if st.button("📤 Envoyer le Message WhatsApp Réel"):
+      succes, message_res = envoyer_whatsapp_reel(wa_number, wa_body)
       if succes:
-        details = (
-            f"Envoi WhatsApp (Réel/Démo) au {destinataire} (Montant:"
-            f" {montant_facture:,.0f} FCFA)"
-        )
         enregistrer_memoire(
-            "NOTIFICATION_WHATSAPP", details, st.session_state.username
+            "WHATSAPP_REEL_SUCCES",
+            f"Message envoyé à {selected_tier_name} ({wa_number})",
+            st.session_state.username,
         )
-        st.success(
-            f"✅ Message transmis avec succès pour le numéro `{destinataire}` !"
-            f" ({resultat})"
-        )
-        if not phone_id_input or not token_input:
-          st.info(
-              "ℹ️ Mode Simulation actif : Pour basculer sur l'envoi API Cloud"
-              " officiel de Meta, veuillez renseigner vos identifiants dans les"
-              " champs du haut."
-          )
+        st.success(f"✅ {message_res}")
       else:
-        st.error(f"❌ Échec de l'envoi : {resultat}")
+        enregistrer_memoire(
+            "WHATSAPP_REEL_ECHEC",
+            f"Échec envoi à {selected_tier_name} : {message_res}",
+            st.session_state.username,
+            statut="ECHEC",
+        )
+        st.error(f"❌ {message_res}")
+
+  with tab_email:
+    st.markdown("### Canal E-mail Sécurisé (SMTP)")
+    email_addr = st.text_input(
+        "Adresse E-mail du Destinataire",
+        value=dest_tier.get("email", "contact@entreprise.ci"),
+    )
+    email_obj = st.text_input(
+        "Objet de l'E-mail",
+        value=f"Notification officielle - {selected_tier_name}",
+    )
+    email_body = st.text_area(
+        "Contenu de l'E-mail",
+        value=(
+            f"Bonjour {selected_tier_name},\n\nNous vous prions de bien vouloir"
+            " trouver ci-joint les informations relatives à votre dossier en"
+            " cours.\n\nCordialement,\nLa Direction Financière"
+        ),
+    )
+
+    if st.button("📤 Envoyer l'E-mail Réel"):
+      succes, message_res = envoyer_email_reel(email_addr, email_obj, email_body)
+      if succes:
+        enregistrer_memoire(
+            "EMAIL_REEL_SUCCES",
+            f"E-mail envoyé à {selected_tier_name} ({email_addr})",
+            st.session_state.username,
+        )
+        st.success(f"✅ {message_res}")
+      else:
+        enregistrer_memoire(
+            "EMAIL_REEL_ECHEC",
+            f"Échec e-mail à {selected_tier_name} : {message_res}",
+            st.session_state.username,
+            statut="ECHEC",
+        )
+        st.error(f"❌ {message_res}")
 
 # -----------------------------------------------------------------------------
 # 5. ESPACE : FINANCE & COMPTABILITÉ (SYSCOHADA)
@@ -560,10 +649,10 @@ elif st.session_state.espace_actif == "Comptabilite":
       enregistrer_memoire(
           "SAISIE_COMPTABLE", details, st.session_state.username
       )
-      st.success("✅ Écriture comptable enregistrée avec succès.")
+      st.success("✅ Écriture comptable enregistrée et persistée avec succès.")
 
 # -----------------------------------------------------------------------------
-# 6. ESPACE : ANNUAIRE TIERS (RCCM / IF)
+# 6. ESPACE : ANNUAIRE TIERS (PERSISTANCE VRAIE)
 # -----------------------------------------------------------------------------
 elif st.session_state.espace_actif == "Tiers":
   st.markdown(
@@ -571,25 +660,48 @@ elif st.session_state.espace_actif == "Tiers":
       unsafe_allow_html=True,
   )
 
+  tiers_list = charger_tiers()
+
   with st.form("form_tiers"):
+    st.subheader("Ajouter ou Mettre à Jour un Tiers")
     c1, c2 = st.columns(2)
     with c1:
-      nom_tiers = st.text_input("Raison Sociale", value="Eburnie Distribution SARL")
-      rccm = st.text_input("Numéro RCCM", value="CI-ABJ-2024-B-9876")
-      ifu = st.text_input("Compte Contribuable (IFU)", value="2009876 K")
+      nom_tiers = st.text_input("Raison Sociale", value="")
+      rccm = st.text_input("Numéro RCCM", value="")
+      ifu = st.text_input("Compte Contribuable (IFU)", value="")
     with c2:
-      contact = st.text_input("Téléphone / WhatsApp", value="+225 05 00 00 00 00")
+      contact = st.text_input("Téléphone / WhatsApp", value="")
+      email_tiers = st.text_input("Adresse E-mail", value="")
       canal_paiement = st.selectbox(
           "Mode de Paiement Préféré",
           ["Virement Bancaire", "Wave Business", "Orange Money Marchand"],
       )
 
-    if st.form_submit_button("Enregistrer le Tiers"):
-      details = f"Enregistrement du tiers {nom_tiers} (RCCM: {rccm})"
-      enregistrer_memoire(
-          "ENREGISTREMENT_TIERS", details, st.session_state.username
-      )
-      st.success(f"✅ Tiers **{nom_tiers}** consigné.")
+    if st.form_submit_button("Enregistrer le Tiers dans la Base"):
+      if nom_tiers:
+        nouveau_tiers = {
+            "nom": nom_tiers,
+            "rccm": rccm,
+            "ifu": ifu,
+            "contact": contact,
+            "email": email_tiers,
+        }
+        tiers_list.append(nouveau_tiers)
+        sauvegarder_tiers(tiers_list)
+        enregistrer_memoire(
+            "AJOUT_TIERS",
+            f"Enregistrement du tiers {nom_tiers}",
+            st.session_state.username,
+        )
+        st.success(
+            f"✅ Tiers **{nom_tiers}** enregistré et persisté durablement."
+        )
+      else:
+        st.error("❌ La raison sociale est obligatoire.")
+
+  st.markdown("### Tiers Actuellement Enregistrés")
+  if tiers_list:
+    st.dataframe(pd.DataFrame(tiers_list), use_container_width=True)
 
 # -----------------------------------------------------------------------------
 # 7. ESPACE : FISCALITÉ & VEILLE DGI
@@ -657,8 +769,8 @@ elif st.session_state.espace_actif == "IA":
       "<h2>🤖 Assistant IA Central Intelligent</h2>", unsafe_allow_html=True
   )
   st.markdown(
-      "Posez vos questions. L'assistant analyse les transactions, les"
-      " paiements et la mémoire opérationnelle."
+      "Posez vos questions. L'assistant analyse les transactions réelles et"
+      " l'historique d'audit chiffré."
   )
 
   if "messages_ia" not in st.session_state:
@@ -666,8 +778,8 @@ elif st.session_state.espace_actif == "IA":
         "role": "assistant",
         "content": (
             "Bonjour ! Je suis votre Assistant IA Central. Je peux consulter"
-            " les paiements, vérifier des tiers ou résumer l'activité. Que"
-            " souhaitez-vous savoir ?"
+            " les données persistantes, analyser l'historique ou vérifier les"
+            " statuts d'envoi. Que souhaitez-vous savoir ?"
         ),
     }]
 
@@ -675,7 +787,9 @@ elif st.session_state.espace_actif == "IA":
     with st.chat_message(msg["role"]):
       st.markdown(msg["content"])
 
-  prompt = st.chat_input("Ex: 'Quels sont les derniers encaissements réalisés ?'")
+  prompt = st.chat_input(
+      "Ex: 'Quels messages avons-nous envoyés aujourd'hui ?'"
+  )
   if prompt:
     st.session_state.messages_ia.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
@@ -685,25 +799,33 @@ elif st.session_state.espace_actif == "IA":
     reponse = "Je n'ai pas trouvé d'information correspondante dans les registres."
     p_lower = prompt.lower()
 
-    if (
-        "paiement" in p_lower
-        or "encaissement" in p_lower
-        or "opération" in p_lower
-        or "whatsapp" in p_lower
-    ):
-      if memoire:
-        dernier = memoire[0]
+    if "message" in p_lower or "e-mail" in p_lower or "whatsapp" in p_lower:
+      comms = [
+          h
+          for h in memoire
+          if "WHATSAPP" in h["action"] or "EMAIL" in h["action"]
+      ]
+      if comms:
+        dernier = comms[0]
         reponse = (
-            f"Dernière opération enregistrée : **{dernier['action']}** par"
-            f" *{dernier['utilisateur']}* à {dernier['timestamp']}"
-            f" ({dernier['details_clair']}). Total d'opérations : {len(memoire)}."
+            f"Dernière communication : **{dernier['action']}** le"
+            f" {dernier['timestamp']} ({dernier['details_clair']}) — Statut:"
+            f" `{dernier['statut']}`."
         )
       else:
-        reponse = "Aucune opération enregistrée pour le moment."
+        reponse = (
+            "Aucun message ou e-mail n'a encore été consigné dans l'historique."
+        )
+    elif "tiers" in p_lower or "client" in p_lower or "fournisseur" in p_lower:
+      tiers = charger_tiers()
+      reponse = (
+          f"Il y a actuellement {len(tiers)} tiers enregistrés dans l'annuaire"
+          " persistant."
+      )
     elif "bonjour" in p_lower:
       reponse = (
-          "Bonjour ! Comment puis-je vous assister dans la gestion de vos flux"
-          " financiers aujourd'hui ?"
+          "Bonjour ! Je suis connecté aux registres réels de l'entreprise. En"
+          " quoi puis-je vous assister ?"
       )
 
     st.session_state.messages_ia.append({"role": "assistant", "content": reponse})

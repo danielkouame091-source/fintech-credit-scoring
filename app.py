@@ -1,8 +1,3 @@
-Voici le code complet et ultime de votre application **`app.py`**, intégrant désormais les normes bancaires de l'**UEMOA / BCEAO** (classification des créances et provisionnement réglementaire), la **gestion avancée des garanties et sûretés** (hypothèques, nantissements avec décote / *haircut*) et un **Centre d'Opérations de Sécurité (SOC - Journal des alertes et intrusions)** digne des plus grandes banques internationales et régionales.
-
-Remplacez entièrement le contenu de votre fichier `app.py` par ce code :
-
-```python
 import datetime
 import json
 import os
@@ -17,9 +12,6 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 from cryptography.fernet import Fernet
 
-# -----------------------------------------------------------------------------
-# CONFIGURATION DE LA PAGE & DESIGN INSTITUTIONNEL HAUT DE GAMME
-# -----------------------------------------------------------------------------
 st.set_page_config(
     page_title="Plateforme FinTech & Compliance | Standard Suisse & UEMOA",
     layout="wide",
@@ -35,16 +27,14 @@ st.markdown(
         font-family: 'Plus Jakarta Sans', sans-serif;
     }
 
-    /* Arrière-plan global : Bleu nuit institutionnel profond */
     .stApp {
         background: radial-gradient(circle at 50% 10%, #040814 0%, #010204 100%);
         color: #f8fafc;
     }
 
-    /* --- CARTES 3D GLASSMORPHISM NETTES --- */
     .dashboard-card, div[data-testid="stMetric"], div.stForm, .stPlotlyChart {
         background: rgba(15, 23, 42, 0.85);
-        border: 1px solid rgba(212, 175, 55, 0.35); /* Doré institutionnel */
+        border: 1px solid rgba(212, 175, 55, 0.35);
         border-radius: 16px;
         padding: 24px;
         box-shadow: 0 12px 35px rgba(0, 0, 0, 0.75), 
@@ -52,7 +42,6 @@ st.markdown(
         margin-bottom: 20px;
     }
 
-    /* --- CHAMPS DE SAISIE & SELECTBOX PROFESSIONNELS --- */
     input, textarea {
         background-color: rgba(15, 23, 42, 0.95) !important;
         color: #ffffff !important;
@@ -76,9 +65,6 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# -----------------------------------------------------------------------------
-# GESTION DES CLÉS DE CHIFFREMENT AES-256 & PISTE D'AUDIT CHAÎNÉE
-# -----------------------------------------------------------------------------
 KEY_FILE = "secret.key"
 DATA_FILE = "audit_suisse_aes256.json"
 SOC_FILE = "soc_security_logs.json"
@@ -172,9 +158,6 @@ def charger_logs_soc():
             return []
     return []
 
-def hacher_mdp(password):
-    return hashlib.sha256(password.encode()).hexdigest()
-
 @st.cache_resource
 def entrainer_modele_scoring():
     np.random.seed(42)
@@ -197,9 +180,6 @@ def verifier_listes_sanctions(nom_client):
             return True
     return False
 
-# -----------------------------------------------------------------------------
-# AUTHENTIFICATION FORTE MFA (2FA & JETON NUMÉRIQUE)
-# -----------------------------------------------------------------------------
 if "authentifie" not in st.session_state:
     st.session_state.authentifie = False
 
@@ -232,9 +212,6 @@ if not st.session_state.authentifie:
                     st.error("Code MFA invalide. Veuillez saisir un code à 6 chiffres valide.")
     st.stop()
 
-# -----------------------------------------------------------------------------
-# EN-TÊTE & CONTEXTE INSTITUTIONNEL
-# -----------------------------------------------------------------------------
 st.markdown("<h1 style='text-align: center; color: #f8fafc; font-weight: 800;'>HUB BANCAIRE INTERNATIONAL & RISQUES (SUISSE - UEMOA)</h1>", unsafe_allow_html=True)
 st.markdown(f"<p style='text-align: center; color: #fde047; font-size: 1.05rem;'>Collaborateur : <b>{st.session_state.username}</b> | Profil : <b>{st.session_state.user_role}</b> | 🔐 HSM / AES-256 Actif</p>", unsafe_allow_html=True)
 
@@ -253,9 +230,6 @@ with col_cfg2:
 
 st.markdown("---")
 
-# -----------------------------------------------------------------------------
-# NAVIGATION CENTRALE
-# -----------------------------------------------------------------------------
 if "active_module" not in st.session_state:
     st.session_state.active_module = "🏠 Tableau de bord"
 
@@ -299,9 +273,6 @@ def masquer_donnee(valeur_texte, est_sensible=True):
         return "********"
     return valeur_texte
 
-# -----------------------------------------------------------------------------
-# 1. TABLEAU DE BORD
-# -----------------------------------------------------------------------------
 if current_page == "🏠 Tableau de bord":
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("Actifs Sous Gestion (AuM)", "4.8 Mds CHF / 3.2 Mille Mds XOF", delta="+4.2%")
@@ -325,9 +296,6 @@ if current_page == "🏠 Tableau de bord":
         fig_pie.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
         st.plotly_chart(fig_pie, use_container_width=True)
 
-# -----------------------------------------------------------------------------
-# 2. BANQUE & CRÉDIT
-# -----------------------------------------------------------------------------
 elif current_page == "💳 Banque & Crédit":
     st.markdown("#### Modèle Prédictif de Solvabilité, Explicabilité IA & Workflow Maker-Checker")
     
@@ -390,9 +358,6 @@ elif current_page == "💳 Banque & Crédit":
         enregistrer_log_soc(f"Création de dossier de crédit {dossier['id']} - Statut: {decis_finale}", "INFO")
         st.success(f"✅ Dossier `{dossier['id']}` sécurisé, chiffré en AES-256 et consigné.")
 
-# -----------------------------------------------------------------------------
-# 3. PROVISIONS BCEAO / UEMOA (NOUVEAU)
-# -----------------------------------------------------------------------------
 elif current_page == "📊 Provisions BCEAO":
     st.markdown("#### 📊 Classification et Calcul des Provisions Réglementaires (Normes BCEAO / UEMOA)")
     
@@ -403,19 +368,18 @@ elif current_page == "📊 Provisions BCEAO":
     with col_pr2:
         type_garantie_associee = st.selectbox("Garantie principale rattachée", ["Aucune garantie", "Garantie personnelle (Aval)", "Nantissement / Gage", "Hypothèque immobilière de 1er rang"])
 
-    # Classification BCEAO selon les jours de retard
     if jours_retard == 0:
         classe_bceao = "Sains (Créances Saines)"
-        taux_provision = 0.01 # 1% (Provision générale / Encours performants)
+        taux_provision = 0.01
     elif jours_retard <= 90:
         classe_bceao = "Impayés / En souffrance (Sous surveillance)"
-        taux_provision = 0.15 # 15%
+        taux_provision = 0.15
     elif jours_retard <= 180:
         classe_bceao = "Douteux"
-        taux_provision = 0.50 # 50%
+        taux_provision = 0.50
     else:
         classe_bceao = "Litigieux (Contentieux)"
-        taux_provision = 1.00 # 100%
+        taux_provision = 1.00
 
     montant_provision = encours_credit * taux_provision
 
@@ -440,9 +404,6 @@ elif current_page == "📊 Provisions BCEAO":
         enregistrer_log_soc(f"Calcul de provision BCEAO enregistré pour {encours_credit:,.0f} (Classe: {classe_bceao})", "INFO")
         st.success(f"✅ Provision de `{montant_provision:,.0f}` enregistrée et chiffrée avec succès.")
 
-# -----------------------------------------------------------------------------
-# 4. SÛRETÉS & GARANTIES (NOUVEAU)
-# -----------------------------------------------------------------------------
 elif current_page == "🏛️ Sûretés & Garanties":
     st.markdown("#### 🏛️ Gestion des Sûretés, Nantissements et Hypothèques (Décote / Haircut)")
     
@@ -481,9 +442,6 @@ elif current_page == "🏛️ Sûretés & Garanties":
         enregistrer_log_soc(f"Enregistrement de sûreté ({nature_garantie}) d'une valeur nette de {valeur_nette_garantie:,.0f}", "INFO")
         st.success(f"✅ Sûreté enregistrée avec succès sous l'identifiant `{dossier_surete['id']}`.")
 
-# -----------------------------------------------------------------------------
-# 5. ANTI-FRAUDE & TRAÇAGE
-# -----------------------------------------------------------------------------
 elif current_page == "🚨 Anti-Fraude & Traçage":
     st.markdown("#### 🕵️‍♂️ Traçage des Sauts Financiers & Gel Automatisé")
     col_tr1, col_tr2 = st.columns(2)
@@ -527,9 +485,6 @@ elif current_page == "🚨 Anti-Fraude & Traçage":
         enregistrer_log_soc(f"ALERTE ROUGE : Gel de transaction {id_transaction} pour un montant de {montant_initial:,.0f}", "CRITICAL")
         st.error(f"🛑 ORDRE DE SÉQUESTRE EXÉCUTÉ sous l'ID `{alerte_id}`. Comptes gelés en temps réel.")
 
-# -----------------------------------------------------------------------------
-# 6. CONFORMITÉ LBA & FILTRAGE SANCTIONS
-# -----------------------------------------------------------------------------
 elif current_page == "🛡️ Conformité LBA":
     st.markdown("#### 🛡️ Conformité LBA & Screening Automatique des Listes de Sanctions (SECO / OFAC / ONU)")
     c_kyc1, c_kyc2 = st.columns(2)
@@ -569,9 +524,6 @@ elif current_page == "🛡️ Conformité LBA":
         else:
             st.error(f"🛑 Alerte Compliance : Le dossier `{dossier_kyc['id']}` a été consigné avec un statut de blocage.")
 
-# -----------------------------------------------------------------------------
-# 7. SOC (JOURNAL DES SÉCURITÉS & INTRUSIONS) - NOUVEAU
-# -----------------------------------------------------------------------------
 elif current_page == "🚨 SOC (Sécurité)":
     st.markdown("#### 🛡️ Centre d'Opérations de Sécurité (SOC) — Journal des Événements et Intrusions")
     st.markdown("<p style='color: #cbd5e1;'>Surveillance en temps réel des accès au système, des tentatives d'authentification et des opérations sensibles.</p>", unsafe_allow_html=True)
@@ -594,9 +546,6 @@ elif current_page == "🚨 SOC (Sécurité)":
     else:
         st.info("Aucun événement de sécurité consigné pour le moment.")
 
-# -----------------------------------------------------------------------------
-# 8. MOBILE MONEY
-# -----------------------------------------------------------------------------
 elif current_page == "📱 Mobile Money":
     st.markdown("#### Scoring Alternatif Digital (Orange Money / Wave / MTN MoMo)")
     flux = st.number_input("Encaissements 3 derniers mois", value=4000000)
@@ -606,9 +555,6 @@ elif current_page == "📱 Mobile Money":
     st.metric("Score Digital Alternatif", f"{int(score)} / 950 points")
     st.success("🌟 Profil validé pour l'octroi d'une ligne de micro-crédit mobile.")
 
-# -----------------------------------------------------------------------------
-# 9. RISQUE AGRICOLE
-# -----------------------------------------------------------------------------
 elif current_page == "Risque Agricole" or current_page == "🌱 Risque Agricole":
     st.markdown("#### Modélisation Agricole & Campagnes (Cacao / Café / Anacarde)")
     surf = st.number_input("Surface exploitée (Hectares)", value=10.0)
@@ -617,9 +563,6 @@ elif current_page == "Risque Agricole" or current_page == "🌱 Risque Agricole"
     rev = surf * rend * prix
     st.metric("Revenu Net Estimé de la Campagne", f"{rev:,.0f}")
 
-# -----------------------------------------------------------------------------
-# 10. PAPSS
-# -----------------------------------------------------------------------------
 elif current_page == "🌍 PAPSS":
     st.markdown("#### Paiements & Règlements Panafricains Transfrontaliers (PAPSS)")
     montant_xof = st.number_input("Montant à transférer", value=10000000)
@@ -628,18 +571,12 @@ elif current_page == "🌍 PAPSS":
         enregistrer_log_soc(f"Transfert PAPSS exécuté pour {montant_xof:,.0f} vers {devise_cible}", "INFO")
         st.success("✅ Règlement transfrontalier exécuté avec succès en monnaies locales.")
 
-# -----------------------------------------------------------------------------
-# 11. STRESS-TESTS
-# -----------------------------------------------------------------------------
 elif current_page == "📈 Stress-Tests":
     st.markdown("#### Analyse de Résistance Bancaire (Stress-Tests BCEAO / FINMA)")
     choc = st.slider("Choc de baisse des marchés / matières premières (%)", 0, 70, 30)
     stage = "Stage 1 (Sain)" if choc < 25 else ("Stage 2 (Surveillance)" if choc < 50 else "Stage 3 (Défaut / Provisionnement lourd)")
     st.metric("Classification Prudentielle Globale", stage)
 
-# -----------------------------------------------------------------------------
-# 12. DATA CENTER
-# -----------------------------------------------------------------------------
 elif current_page == "📂 Data Center":
     st.markdown("#### Importation de Portefeuille & Registre Chiffré AES-256")
     uploaded_file = st.file_uploader("Importer un fichier chiffré (CSV / Excel)", type=["csv", "xlsx"])
@@ -651,9 +588,6 @@ elif current_page == "📂 Data Center":
         except Exception as e:
             st.error(f"Erreur : {e}")
 
-# -----------------------------------------------------------------------------
-# 13. HISTORIQUE & AUDIT
-# -----------------------------------------------------------------------------
 elif current_page == "📜 Historique & Audit":
     st.markdown("#### 🔒 Piste d'Audit Inviolable (Chiffrement AES-256 & Chaînage SHA-256)")
     historique = charger_historique()
@@ -698,9 +632,6 @@ elif current_page == "📜 Historique & Audit":
     else:
         st.info("Aucune transaction enregistrée dans le registre chiffré.")
 
-# -----------------------------------------------------------------------------
-# 14. PARAMÈTRES
-# -----------------------------------------------------------------------------
 elif current_page == "⚙️ Paramètres":
     st.markdown("#### Paramètres Généraux de la Plateforme")
     st.text_input("Responsable Technique / Risk Manager", value="Kouassi Kouame Daniel")
@@ -709,5 +640,3 @@ elif current_page == "⚙️ Paramètres":
         enregistrer_log_soc(f"Déconnexion de {st.session_state.username}", "INFO")
         st.session_state.authentifie = False
         st.rerun()
-
-```

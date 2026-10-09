@@ -16,7 +16,7 @@ from cryptography.fernet import Fernet
 # CONFIGURATION DE LA PAGE & DESIGN 3D / GLASSMORPHISM HAUT DE GAMME
 # -----------------------------------------------------------------------------
 st.set_page_config(
-    page_title="Plateforme FinTech & Compliance | Standard Suisse & UEMOA",
+    page_title="Plateforme FinTech & Compliance | Standard Global (Suisse - UEMOA - Inde RBI)",
     layout="wide",
     initial_sidebar_state="collapsed",
 )
@@ -45,23 +45,20 @@ st.markdown(
         margin-bottom: 20px;
     }
 
-    /* ---------------------------------------------------------
-       STYLES 3D AVANCÉS POUR LES BOUTONS DU MENU (GLASSMORPHISM)
-       --------------------------------------------------------- */
     div.stButton > button {
         width: 100%;
         background: linear-gradient(145deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95)) !important;
         color: #f8fafc !important;
         font-weight: 600 !important;
-        font-size: 0.88rem !important;
+        font-size: 0.82rem !important;
         border: 1px solid rgba(212, 175, 55, 0.3) !important;
         border-radius: 14px !important;
-        padding: 14px 10px !important;
+        padding: 12px 8px !important;
         box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5), 
                     inset 0 1px 0 rgba(255, 255, 255, 0.15),
                     inset 0 -2px 5px rgba(0, 0, 0, 0.6) !important;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        margin-bottom: 10px;
+        margin-bottom: 8px;
     }
 
     div.stButton > button:hover {
@@ -72,11 +69,6 @@ st.markdown(
         box-shadow: 0 14px 30px rgba(212, 175, 55, 0.25), 
                     inset 0 1px 0 rgba(255, 255, 255, 0.3),
                     inset 0 -2px 6px rgba(0, 0, 0, 0.8) !important;
-    }
-
-    div.stButton > button:active {
-        transform: translateY(1px) scale(0.99);
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.8), inset 0 2px 4px rgba(0, 0, 0, 0.9) !important;
     }
 
     input, textarea {
@@ -108,6 +100,7 @@ st.markdown(
 KEY_FILE = "secret.key"
 DATA_FILE = "audit_suisse_aes256.json"
 SOC_FILE = "soc_security_logs.json"
+VAULT_FILE = "aadhaar_token_vault.json"
 
 def obtenir_cle_chiffrement():
     if os.path.exists(KEY_FILE):
@@ -183,7 +176,7 @@ def enregistrer_log_soc(evenement, niveau="INFO"):
         "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "niveau": niveau,
         "evenement": evenement,
-        "ip_source": "196.200.14.82 (Abidjan / Genève Secure Gateway)"
+        "ip_source": "196.200.14.82 (Abidjan / Genève / Mumbai Secure Gateway)"
     }
     logs.insert(0, nouveau_log)
     with open(SOC_FILE, "w", encoding="utf-8") as f:
@@ -227,19 +220,19 @@ if "authentifie" not in st.session_state:
     st.session_state.authentifie = False
 
 if not st.session_state.authentifie:
-    st.markdown("<h2 style='text-align: center; color: #fde047;'>🇨🇭🇨🇮 Portail d'Accès Unifié — Standard Suisse & UEMOA (BCEAO)</h2>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; color: #cbd5e1;'>Chiffrement AES-256, MFA Avancé & Surveillance SOC Active</p>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align: center; color: #fde047;'>🇨🇭🇨🇮🇮🇳 Portail d'Accès Unifié — Standard Global (Suisse, UEMOA & Inde RBI)</h2>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #cbd5e1;'>Chiffrement AES-256, Account Aggregator, FRM & Aadhaar Vault</p>", unsafe_allow_html=True)
     
     col_l1, col_l2, col_l3 = st.columns([1, 2, 1])
     with col_l2:
         with st.form("form_login"):
-            username = st.text_input("Identifiant Bancaire Sécurisé", value="private.banker@geneva-abidjan.ch")
+            username = st.text_input("Identifiant Bancaire Sécurisé", value="private.banker@geneva-mumbai.ch")
             password = st.text_input("Mot de passe maître", type="password", value="swisssecure2026")
             code_otp = st.text_input("Jeton d'Authentification Forte (Code MFA / OTP)", value="482910")
             role_choisi = st.selectbox("Profil d'Habilitation (RBAC)", [
                 "🔍 Analyste de Crédit & Private Banker (Maker)",
-                "⚖️ Comité de Direction / Chief Risk Officer (Checker - FINMA/BCEAO)",
-                "🚨 Officier de Conformité LBA & Risques UEMOA",
+                "⚖️ Comité de Direction / Chief Risk Officer (Checker)",
+                "🚨 Officier de Conformité & Risques (LBA / RBI / BCEAO)",
                 "🛡️ Opérateur SOC & Sécurité des Systèmes d'Information"
             ])
             submit_login = st.form_submit_button("Valider la Connexion Chiffrée 2FA", use_container_width=True)
@@ -258,7 +251,7 @@ if not st.session_state.authentifie:
 # -----------------------------------------------------------------------------
 # EN-TÊTE & CONTEXTE INSTITUTIONNEL
 # -----------------------------------------------------------------------------
-st.markdown("<h1 style='text-align: center; color: #f8fafc; font-weight: 800;'>HUB BANCAIRE INTERNATIONAL & RISQUES (SUISSE - UEMOA)</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; color: #f8fafc; font-weight: 800;'>HUB BANCAIRE INTERNATIONAL & RISQUES (SUISSE - UEMOA - INDE RBI)</h1>", unsafe_allow_html=True)
 st.markdown(f"<p style='text-align: center; color: #fde047; font-size: 1.05rem;'>Collaborateur : <b>{st.session_state.username}</b> | Profil : <b>{st.session_state.user_role}</b> | 🔐 HSM / AES-256 Actif</p>", unsafe_allow_html=True)
 
 col_cfg1, col_cfg2 = st.columns(2)
@@ -266,13 +259,13 @@ with col_cfg1:
     zone_reglementaire = st.selectbox(
         "Cadre Réglementaire Appliqué",
         [
+            "Inde / RBI & NPCI (Account Aggregator, FRM & Aadhaar)",
             "BCEAO / UEMOA (Circulaires Bancaires & Provisions)",
             "FINMA (Autorité fédérale suisse & Bâle III)",
-            "Standards Internationaux (UBS / SG / Ecobank)",
         ],
     )
 with col_cfg2:
-    secret_bancaire_mode = st.toggle("Activer le Masquage Dynamique du Secret Bancaire (LPD / RGPD)", value=True)
+    secret_bancaire_mode = st.toggle("Activer le Masquage Dynamique du Secret Bancaire (LPD / RGPD / DPDP Act)", value=True)
 
 st.markdown("---")
 
@@ -285,24 +278,24 @@ if "active_module" not in st.session_state:
 modules = {
     "🏠 Tableau de bord": "Vue Globale",
     "💳 Banque & Crédit": "Scoring IA & Maker-Checker",
+    "🔐 Account Aggregator": "Consentement RBI (Data Sharing)",
+    "🛡️ FRM (Anti-Fraude)": "Comportement & Device Fingerprint",
+    "🏛️ Aadhaar/PAN Vault": "Tokenisation & Coffre-Fort",
+    "🔄 Réconciliation UPI": "Rails de Paiement & UTR",
     "📊 Provisions BCEAO": "Classification & Normes UEMOA",
     "🏛️ Sûretés & Garanties": "Nantissements & Hypothèques",
-    "🚨 Anti-Fraude & Traçage": "Traçage des Flux & Gel",
+    "🚨 Anti-Fraude & Gel": "Traçage des Flux & Séquestre",
     "🛡️ Conformité LBA": "KYC & Screening Sanctions",
     "🚨 SOC (Sécurité)": "Journal des Intrusions & Logs",
-    "📱 Mobile Money": "Scoring Alternatif",
-    "🌱 Risque Agricole": "Campagnes Cacao/Café",
-    "🌍 PAPSS": "Paiements Transfrontaliers",
     "📈 Stress-Tests": "Résistance Macro & BCEAO",
-    "📂 Data Center": "Import Chiffré",
     "📜 Historique & Audit": "Piste Chaînée & Rapport Certifié",
     "⚙️ Paramètres": "Paramétrage Global",
 }
 
-cols_menu = st.columns(5)
+cols_menu = st.columns(4)
 idx = 0
 for mod_name, mod_desc in modules.items():
-    col_target = cols_menu[idx % 5]
+    col_target = cols_menu[idx % 4]
     with col_target:
         is_active = st.session_state.active_module == mod_name
         btn_label = f"✦ {mod_name}" if is_active else mod_name
@@ -327,8 +320,8 @@ def masquer_donnee(valeur_texte, est_sensible=True):
 # -----------------------------------------------------------------------------
 if current_page == "🏠 Tableau de bord":
     col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Actifs Sous Gestion (AuM)", "4.8 Mds CHF / 3.2 Mille Mds XOF", delta="+4.2%")
-    col2.metric("Indice de Conformité BCEAO/FINMA", "99.98%", delta="Optimal")
+    col1.metric("Actifs Sous Gestion (AuM)", "4.8 Mds CHF / 32k Crore INR", delta="+4.2%")
+    col2.metric("Indice de Conformité Global (RBI/FINMA)", "99.99%", delta="Optimal")
     col3.metric("Fonds Bloqués / Séquestrés LBA", "14.2 Mio CHF", delta="-2.1%")
     col4.metric("Ratio de Solvabilité Tier-1", "18.6%", delta="Sain")
 
@@ -343,7 +336,7 @@ if current_page == "🏠 Tableau de bord":
 
     with c_g2:
         st.subheader("📊 Allocation d'Actifs & Portefeuille Régional")
-        df_pie = pd.DataFrame({"Classe d'Actifs": ["Fonds Privés & Actions", "Obligations Souveraines UEMOA", "Immobilier Abidjan/Genève", "Liquidités & Or", "Private Equity"], "Part": [30, 25, 20, 15, 10]})
+        df_pie = pd.DataFrame({"Classe d'Actifs": ["Fonds Privés & Actions", "Obligations Souveraines", "Immobilier International", "Liquidités & Or", "Private Equity"], "Part": [30, 25, 20, 15, 10]})
         fig_pie = px.pie(df_pie, names="Classe d'Actifs", values="Part", hole=0.4, template="plotly_dark")
         fig_pie.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
         st.plotly_chart(fig_pie, use_container_width=True)
@@ -363,7 +356,7 @@ elif current_page == "💳 Banque & Crédit":
     with col_cr2:
         pret_demande = st.number_input("Montant du Financement Demandé", min_value=100000, value=25000000)
         duree_mois = st.slider("Durée du remboursement (Mois)", 1, 60, 24)
-        registre_impayes = st.radio("Fichage Central des Risques (BCEAO / Centrale)", ["Aucun incident", "Incident actif / Litige en cours"])
+        registre_impayes = st.radio("Fichage Central des Risques (Centrale / CIBIL / BCEAO)", ["Aucun incident", "Incident actif / Litige en cours"])
 
     sanction_detectee = verifier_listes_sanctions(nom_client_saisi)
     if sanction_detectee:
@@ -400,7 +393,7 @@ elif current_page == "💳 Banque & Crédit":
     if st.button("💾 Enregistrer et Chiffrer au Repos (AES-256)"):
         decis_finale = decision_checker if decision_checker != "En attente" else ("APPROUVÉ (Maker)" if prob_defaut < 35 and not sanction_detectee else "REFUSÉ")
         dossier = {
-            "id": f"UEMOA-CRED-{uuid.uuid4().hex[:6].upper()}",
+            "id": f"GLOBAL-CRED-{uuid.uuid4().hex[:6].upper()}",
             "date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
             "client": nom_client_saisi,
             "montant": pret_demande,
@@ -414,14 +407,108 @@ elif current_page == "💳 Banque & Crédit":
         st.success(f"✅ Dossier `{dossier['id']}` sécurisé, chiffré en AES-256 et consigné.")
 
 # -----------------------------------------------------------------------------
-# 3. PROVISIONS BCEAO / UEMOA
+# 3. ACCOUNT AGGREGATOR (RBI STANDARD - CONSENT MANAGEMENT)
+# -----------------------------------------------------------------------------
+elif current_page == "🔐 Account Aggregator":
+    st.markdown("#### 🔐 Framework Account Aggregator (Standard RBI - Consentement Numérique & Partage Sécurisé)")
+    st.markdown("<p style='color: #cbd5e1;'>Gestion des artefacts de consentement pour l'extraction certifiée des relevés de dépôt et de flux financiers.</p>", unsafe_allow_html=True)
+
+    col_aa1, col_aa2 = st.columns(2)
+    with col_aa1:
+        client_aa = st.text_input("Nom du Titulaire du Compte", value="Rajesh Kumar / Holding Alpha")
+        type_donnees = st.multiselect("Données Autorisées au Partage (Consent Artifact)", ["Relevés de Dépôt bancaire", "Transactions UPI / IMPS", "Portefeuille d'Investissement", "Données Fiscales (GST)"], default=["Relevés de Dépôt bancaire", "Transactions UPI / IMPS"])
+    with col_aa2:
+        duree_consentement = st.selectbox("Durée de validité du Consentement", ["1 Jour (Usage Unique)", "30 Jours", "6 Mois", "1 An"])
+        fina_fi_id = st.text_input("Identifiant Fiù (Financial Information User ID)", value="FIU-GENEVA-MUMBAI-098")
+
+    if st.button("🔗 Émettre la Demande de Consentement Account Aggregator (FIP -> FIU)"):
+        consent_id = f"AA-CONSENT-{uuid.uuid4().hex[:8].upper()}"
+        enregistrer_log_soc(f"Émission d'un artefact de consentement AA {consent_id} pour {client_aa} ({duree_consentement})", "INFO")
+        st.success(f"✅ Artefact de consentement numérique `{consent_id}` généré avec succès. Notification transmise au client via canal sécurisé (OTP/App).")
+
+# -----------------------------------------------------------------------------
+# 4. FRM (FRAUD RISK MANAGEMENT - COMPORTEMENT & DEVICE FINGERPRINT)
+# -----------------------------------------------------------------------------
+elif current_page == "🛡️ FRM (Anti-Fraude)":
+    st.markdown("#### 🛡️ Moteur FRM en Temps Réel (Analyse Comportementale & Device Fingerprinting)")
+    st.markdown("<p style='color: #cbd5e1;'>Surveillance active des anomalies de connexion, vélocité des dépôts et réputation de l'appareil utilisateur.</p>", unsafe_allow_html=True)
+
+    col_frm1, col_frm2 = st.columns(2)
+    with col_frm1:
+        ip_user = st.text_input("Adresse IP & Géolocalisation", value="103.25.48.12 (Mumbai, Inde - VPN Suspect Détecté)")
+        montant_depot_t = st.number_input("Montant du Dépôt / Virement en cours", value=4500000)
+    with col_frm2:
+        device_id = st.selectbox("Empreinte Appareil (Device Fingerprint)", ["Appareil Enregistré & Connu (Trusted iPhone/Mac)", "Nouvel Appareil Inconnu (Rooté / Émulateur)"])
+        vitesse_frappe = st.selectbox("Analyse Comportementale (Biométrie de frappe)", ["Rythme de frappe normal (Humain)", "Saisie automatisée / Bot suspect"])
+
+    score_frm = 15.0
+    if "VPN" in ip_user or "Inconnu" in device_id:
+        score_frm += 45.0
+    if "Bot" in vitesse_frappe:
+        score_frm += 40.0
+
+    st.markdown("---")
+    mf1, mf2 = st.columns(2)
+    mf1.metric("Indice de Risque FRM (Fraude)", f"{score_frm}%", delta="ALERTE ROUGE - BLOCAGE" if score_frm > 50 else "Normal", delta_color="inverse")
+    mf2.metric("Statut de l'Analyse Comportementale", "MENACE DÉTECTÉE" if score_frm > 50 else "TRANSACTION SÛRE")
+
+    if st.button("🚨 Exécuter le Blocage Préventif FRM & Alerter le SOC"):
+        enregistrer_log_soc(f"ALERTE FRM : Blocage préventif d'une opération de {montant_depot_t:,.0f} (Score de risque: {score_frm}%)", "CRITICAL")
+        st.error("🛑 Action FRM exécutée : Transaction bloquée et transmise au département de lutte contre la fraude.")
+
+# -----------------------------------------------------------------------------
+# 5. AADHAAR / PAN VAULT (TOKENISATION DES DONNÉES SENSIBLES)
+# -----------------------------------------------------------------------------
+elif current_page == "🏛️ Aadhaar/PAN Vault":
+    st.markdown("#### 🏛️ Coffre-Fort de Données & Tokenisation (Aadhaar Vault & PAN Masking)")
+    st.markdown("<p style='color: #cbd5e1;'>Stockage sécurisé isolé et tokenisation irréversible des identifiants nationaux et bancaires sensibles.</p>", unsafe_allow_html=True)
+
+    col_v1, col_v2 = st.columns(2)
+    with col_v1:
+        id_national = st.text_input("Numéro Identifiant / Aadhaar / PAN (À Tokeniser)", value="XXXX-XXXX-8921")
+        intitule_compte = st.text_input("Numéro de Compte Bancaire de Dépôt", value="IN34UTIB0001482910")
+    with col_v2:
+        niveau_chiffrement = st.selectbox("Protocole de Sécurité Vault", ["AES-256 avec HSM Matériel dédié", "Chiffrement Elliptique (ECC P-384)"])
+
+    if st.button("🔒 Générer le Jeton Cryptographique (Token) d'Isolation"):
+        token_gen = f"TOK-VALT-{uuid.uuid4().hex[:12].upper()}"
+        enregistrer_log_soc(f"Tokenisation effectuée dans l'Aadhaar/PAN Vault sous l'ID {token_gen}", "INFO")
+        st.success(f"✅ Données sécurisées dans le coffre-fort. Jeton de substitution généré en toute sécurité : `{token_gen}` (Les données en clair ne sont jamais exposées).")
+
+# -----------------------------------------------------------------------------
+# 6. RÉCONCILIATION UPI / UTR (RAILS DE PAIEMENT)
+# -----------------------------------------------------------------------------
+elif current_page == "🔄 Réconciliation UPI":
+    st.markdown("#### 🔄 Réconciliation Automatique des Rails de Paiement (UPI / UTR / IMPS / RTGS)")
+    st.markdown("<p style='color: #cbd5e1;'>Vérification de l'intégrité des dépôts entrants et rapprochement instantané avec les grands livres comptables.</p>", unsafe_allow_html=True)
+
+    col_r1, col_r2 = st.columns(2)
+    with col_r1:
+        utr_reference = st.text_input("Numéro de Référence UTR / ID Transaction UPI", value="UTR20261009948210")
+        montant_recu = st.number_input("Montant Déclaré du Dépôt", value=1500000)
+    with col_r2:
+        passerelle_paiement = st.selectbox("Réseau de Compensation", ["NPCI UPI Gateway", "IMPS Interbank", "SWIFT International", "PAPSS Panafricain"])
+        statut_rapprochement = st.selectbox("État du Rapprochement", ["En attente de réconciliation", "Rapproché et Validé (Match parfait)", "Écart de montant détecté"])
+
+    st.markdown("---")
+    if "Validé" in statut_rapprochement:
+        st.success("✅ Le dépôt correspond exactement aux flux enregistrés sur la passerelle de compensation.")
+    else:
+        st.warning("⚠️ En attente de validation par le grand livre comptable central.")
+
+    if st.button("📑 Clôturer et Archiver le Rapprochement de Dépôt"):
+        enregistrer_log_soc(f"Réconciliation de dépôt validée pour l'UTR {utr_reference} d'un montant de {montant_recu:,.0f}", "INFO")
+        st.success(f"✅ Rapprochement de l'UTR `{utr_reference}` validé, scellé et enregistré au registre.")
+
+# -----------------------------------------------------------------------------
+# 7. PROVISIONS BCEAO / UEMOA
 # -----------------------------------------------------------------------------
 elif current_page == "📊 Provisions BCEAO":
     st.markdown("#### 📊 Classification et Calcul des Provisions Réglementaires (Normes BCEAO / UEMOA)")
     
     col_pr1, col_pr2 = st.columns(2)
     with col_pr1:
-        encours_credit = st.number_input("Encours Brut du Crédit Octroyé (XOF / CHF)", value=50000000)
+        encours_credit = st.number_input("Encours Brut du Crédit Octroyé", value=50000000)
         jours_retard = st.slider("Nombre de jours de retard de paiement", 0, 360, 15)
     with col_pr2:
         type_garantie_associee = st.selectbox("Garantie principale rattachée", ["Aucune garantie", "Garantie personnelle (Aval)", "Nantissement / Gage", "Hypothèque immobilière de 1er rang"])
@@ -463,23 +550,23 @@ elif current_page == "📊 Provisions BCEAO":
         st.success(f"✅ Provision de `{montant_provision:,.0f}` enregistrée et chiffrée avec succès.")
 
 # -----------------------------------------------------------------------------
-# 4. SÛRETÉS & GARANTIES
+# 8. SÛRETÉS & GARANTIES
 # -----------------------------------------------------------------------------
 elif current_page == "🏛️ Sûretés & Garanties":
     st.markdown("#### 🏛️ Gestion des Sûretés, Nantissements et Hypothèques (Décote / Haircut)")
     
     col_g1, col_g2 = st.columns(2)
     with col_g1:
-        valeur_bien = st.number_input("Valeur Vénale / d'Expertise du Bien (CHF / XOF)", value=80000000)
+        valeur_bien = st.number_input("Valeur Vénale / d'Expertise du Bien", value=80000000)
         nature_garantie = st.selectbox("Nature de la Sûreté", [
             "Hypothèque Immobilière (Urbain / Commercial)",
             "Nantissement de Fonds de Commerce",
-            "Gage sur Stocks (Cacao / Anacarde / Matières premières)",
+            "Gage sur Stocks / Matières premières",
             "Nantissement de Titres / Comptes d'Épargne Bloqués"
         ])
     with col_g2:
         taux_decote = st.slider("Taux de Décote Appliqué (Haircut prudentiel %)", 10, 60, 30)
-        dossier_lie = st.text_input("ID du Dossier de Crédit Lié", "UEMOA-CRED-9482A1")
+        dossier_lie = st.text_input("ID du Dossier de Crédit Lié", "GLOBAL-CRED-9482A1")
 
     valeur_nette_garantie = valeur_bien * (1 - (taux_decote / 100))
 
@@ -490,7 +577,7 @@ elif current_page == "🏛️ Sûretés & Garanties":
 
     if st.button("🔒 Valider et Consigner la Sûreté au Registre Sécurisé"):
         dossier_surete = {
-            "id": f"UEMOA-GART-{uuid.uuid4().hex[:6].upper()}",
+            "id": f"GLOBAL-GART-{uuid.uuid4().hex[:6].upper()}",
             "date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
             "client": f"Garantie {nature_garantie} ({dossier_lie})",
             "montant": valeur_nette_garantie,
@@ -504,17 +591,17 @@ elif current_page == "🏛️ Sûretés & Garanties":
         st.success(f"✅ Sûreté enregistrée avec succès sous l'identifiant `{dossier_surete['id']}`.")
 
 # -----------------------------------------------------------------------------
-# 5. ANTI-FRAUDE & TRAÇAGE
+# 9. ANTI-FRAUDE & GEL
 # -----------------------------------------------------------------------------
-elif current_page == "🚨 Anti-Fraude & Traçage":
+elif current_page == "🚨 Anti-Fraude & Gel":
     st.markdown("#### 🕵️‍♂️ Traçage des Sauts Financiers & Gel Automatisé")
     col_tr1, col_tr2 = st.columns(2)
     with col_tr1:
-        id_transaction = st.text_input("ID de la Transaction Suspecte", f"UEMOA-TXN-{uuid.uuid4().hex[:8].upper()}")
-        compte_source = st.text_input("Compte Émetteur / Source", value="CI98-0001-2291-SGA")
+        id_transaction = st.text_input("ID de la Transaction Suspecte", f"GLOBAL-TXN-{uuid.uuid4().hex[:8].upper()}")
+        compte_source = st.text_input("Compte Émetteur / Source", value="IN98-0001-2291-SGA")
         montant_initial = st.number_input("Montant Contesté", value=15000000)
     with col_tr2:
-        canal_fraude = st.selectbox("Canal", ["Virement SWIFT / PAPSS", "Mobile Money Interopérable", "Plateforme Crypto", "Compte Intermédiaire"])
+        canal_fraude = st.selectbox("Canal", ["Virement SWIFT / PAPSS / UPI", "Mobile Money Interopérable", "Plateforme Crypto", "Compte Intermédiaire"])
         delai_signalement = st.slider("Délai de signalement (Minutes)", 5, 120, 15)
 
     st.markdown("---")
@@ -533,8 +620,8 @@ elif current_page == "🚨 Anti-Fraude & Traçage":
     fig_trace.update_layout(showlegend=False, paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", xaxis=dict(showgrid=False, zeroline=False, showticklabels=False), yaxis=dict(showgrid=False, zeroline=False, showticklabels=False), margin=dict(t=50, b=50))
     st.plotly_chart(fig_trace, use_container_width=True)
 
-    if st.button("🛑 EXÉCUTER LE SÉQUESTRE IMMÉDIAT ET NOTIFIER LA BCEAO / FINMA"):
-        alerte_id = f"UEMOA-ALERT-{uuid.uuid4().hex[:6].upper()}"
+    if st.button("🛑 EXÉCUTER LE SÉQUESTRE IMMÉDIAT ET NOTIFIER LES AUTORITÉS"):
+        alerte_id = f"GLOBAL-ALERT-{uuid.uuid4().hex[:6].upper()}"
         dossier_fraude = {
             "id": alerte_id,
             "date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
@@ -550,14 +637,14 @@ elif current_page == "🚨 Anti-Fraude & Traçage":
         st.error(f"🛑 ORDRE DE SÉQUESTRE EXÉCUTÉ sous l'ID `{alerte_id}`. Comptes gelés en temps réel.")
 
 # -----------------------------------------------------------------------------
-# 6. CONFORMITÉ LBA
+# 10. CONFORMITÉ LBA
 # -----------------------------------------------------------------------------
 elif current_page == "🛡️ Conformité LBA":
     st.markdown("#### 🛡️ Conformité LBA & Screening Automatique des Listes de Sanctions (SECO / OFAC / ONU)")
     c_kyc1, c_kyc2 = st.columns(2)
     with c_kyc1:
         nom_beneficiaire = st.text_input("Nom du Bénéficiaire Effectif (UBO) / Société", value="Vladimir Sanction Holding")
-        pays_origine = st.selectbox("Pays d'Origine des Fonds", ["Côte d'Ivoire (CI)", "Suisse (CH)", "Union Européenne (UE)", "Juridiction à Haut Risque (GAFI)"])
+        pays_origine = st.selectbox("Pays d'Origine des Fonds", ["Inde (IN)", "Côte d'Ivoire (CI)", "Suisse (CH)", "Juridiction à Haut Risque (GAFI)"])
         statut_pep = st.selectbox("Statut Personne Politiquement Exposée (PEP)", ["Non PEP", "PEP National", "PEP International / Haut Risque"])
     with c_kyc2:
         justificatif = st.selectbox("Justificatif d'Origine des Fonds", ["Vente immobilière", "Héritage", "Dividendes certifiés", "Origine non vérifiable / Complexe"])
@@ -575,7 +662,7 @@ elif current_page == "🛡️ Conformité LBA":
     if st.button("📋 Valider le Dossier KYC & Enregistrer le Certificat Chiffré"):
         decis_kyc = "BLOQUÉ - LISTE DE SANCTIONS" if sanction_match else ("VALIDÉ LBA (Conforme)" if score_lba_risque < 50 else "INVESTIGATION REQUISE")
         dossier_kyc = {
-            "id": f"UEMOA-KYC-{uuid.uuid4().hex[:6].upper()}",
+            "id": f"GLOBAL-KYC-{uuid.uuid4().hex[:6].upper()}",
             "date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
             "client": nom_beneficiaire,
             "montant": montant_fonds,
@@ -592,7 +679,7 @@ elif current_page == "🛡️ Conformité LBA":
             st.error(f"🛑 Alerte Compliance : Le dossier `{dossier_kyc['id']}` a été consigné avec un statut de blocage.")
 
 # -----------------------------------------------------------------------------
-# 7. SOC (SÉCURITÉ)
+# 11. SOC (SÉCURITÉ)
 # -----------------------------------------------------------------------------
 elif current_page == "🚨 SOC (Sécurité)":
     st.markdown("#### 🛡️ Centre d'Opérations de Sécurité (SOC) — Journal des Événements et Intrusions")
@@ -614,83 +701,35 @@ elif current_page == "🚨 SOC (Sécurité)":
         st.info("Aucun événement de sécurité consigné pour le moment.")
 
 # -----------------------------------------------------------------------------
-# 8. MOBILE MONEY
-# -----------------------------------------------------------------------------
-elif current_page == "📱 Mobile Money":
-    st.markdown("#### Scoring Alternatif Digital (Orange Money / Wave / MTN MoMo)")
-    flux = st.number_input("Encaissements 3 derniers mois", value=4000000)
-    anciennete = st.slider("Ancienneté du compte (Mois)", 1, 36, 12)
-    solde_nuit = st.number_input("Solde moyen de nuit", value=300000)
-    score = 500 + (anciennete * 10) + (solde_nuit / 2000)
-    st.metric("Score Digital Alternatif", f"{int(score)} / 950 points")
-    st.success("🌟 Profil validé pour l'octroi d'une ligne de micro-crédit mobile.")
-
-# -----------------------------------------------------------------------------
-# 9. RISQUE AGRICOLE
-# -----------------------------------------------------------------------------
-elif current_page == "🌱 Risque Agricole":
-    st.markdown("#### Modélisation Agricole & Campagnes (Cacao / Café / Anacarde)")
-    surf = st.number_input("Surface exploitée (Hectares)", value=10.0)
-    rend = st.number_input("Rendement moyen (Kg/Ha)", value=800)
-    prix = st.number_input("Prix d'achat garanti (FCFA / kg)", value=1800)
-    rev = surf * rend * prix
-    st.metric("Revenu Net Estimé de la Campagne", f"{rev:,.0f}")
-
-# -----------------------------------------------------------------------------
-# 10. PAPSS
-# -----------------------------------------------------------------------------
-elif current_page == "🌍 PAPSS":
-    st.markdown("#### Paiements & Règlements Panafricains Transfrontaliers (PAPSS)")
-    montant_xof = st.number_input("Montant à transférer", value=10000000)
-    devise_cible = st.selectbox("Devise Destinataire", ["NGN", "GHS", "KES", "USD"])
-    if st.button("💱 Exécuter le Transfert Panafricain Instantané"):
-        enregistrer_log_soc(f"Transfert PAPSS exécuté pour {montant_xof:,.0f} vers {devise_cible}", "INFO")
-        st.success("✅ Règlement transfrontalier exécuté avec succès en monnaies locales.")
-
-# -----------------------------------------------------------------------------
-# 11. STRESS-TESTS MACROÉCONOMIQUES
+# 12. STRESS-TESTS MACROÉCONOMIQUES
 # -----------------------------------------------------------------------------
 elif current_page == "📈 Stress-Tests":
-    st.markdown("#### 📈 Moteur de Stress-Test Macroéconomique (BCEAO & Cours des Matières Premières)")
-    st.markdown("<p style='color: #cbd5e1;'>Simulation de résistance du portefeuille face à un choc sur les taux directeurs de la BCEAO et le prix du Cacao / Café.</p>", unsafe_allow_html=True)
+    st.markdown("#### 📈 Moteur de Stress-Test Macroéconomique (RBI / BCEAO & Chocs de Marché)")
+    st.markdown("<p style='color: #cbd5e1;'>Simulation de résistance du portefeuille face à un choc sur les taux directeurs et les matières premières.</p>", unsafe_allow_html=True)
 
     col_st1, col_st2 = st.columns(2)
     with col_st1:
-        hausse_taux_bceao = st.slider("Augmentation du taux directeur BCEAO (Points de base)", 0, 300, 75)
-        chute_cacao = st.slider("Baisse du cours international du Cacao / Café (%)", 0, 50, 20)
+        hausse_taux = st.slider("Augmentation du taux directeur (Points de base)", 0, 300, 75)
+        chute_marche = st.slider("Baisse des cours des actifs / matières premières (%)", 0, 50, 20)
     with col_st2:
-        portefeuille_total_milliards = st.number_input("Encours Global du Portefeuille (Milliards XOF)", value=150.0)
+        portefeuille_total = st.number_input("Encours Global du Portefeuille", value=150.0)
 
-    impact_taux_pct = hausse_taux_bceao * 0.04
-    impact_cacao_pct = chute_cacao * 0.85
-    impact_total_defaut_pct = min(100.0, impact_taux_pct + impact_cacao_pct)
+    impact_taux_pct = hausse_taux * 0.04
+    impact_marche_pct = chute_marche * 0.85
+    impact_total_defaut_pct = min(100.0, impact_taux_pct + impact_marche_pct)
     
-    montant_creances_compromises = portefeuille_total_milliards * (impact_total_defaut_pct / 100)
+    montant_creances_compromises = portefeuille_total * (impact_total_defaut_pct / 100)
     exigence_fonds_propres_sup = montant_creances_compromises * 0.50
 
     st.markdown("---")
     ms1, ms2, ms3 = st.columns(3)
     ms1.metric("Augmentation du Taux de Défaut Global", f"+{impact_total_defaut_pct:.2f}%", delta="Stress Sévère", delta_color="inverse")
-    ms2.metric("Créances à Risque / Compromises", f"{montant_creances_compromises:.2f} Mds XOF")
-    ms3.metric("Besoin Additionnel Fonds Propres Tier-1", f"{exigence_fonds_propres_sup:.2f} Mds XOF")
+    ms2.metric("Créances à Risque / Compromises", f"{montant_creances_compromises:.2f}")
+    ms3.metric("Besoin Additionnel Fonds Propres Tier-1", f"{exigence_fonds_propres_sup:.2f}")
 
     if st.button("📊 Générer le Rapport de Stress-Test Macroéconomique"):
-        enregistrer_log_soc(f"Exécution d'un stress-test macroéconomique (Hausse taux: {hausse_taux_bceao} pb, Chute cacao: {chute_cacao}%)", "WARNING")
+        enregistrer_log_soc(f"Exécution d'un stress-test macroéconomique (Hausse taux: {hausse_taux} pb)", "WARNING")
         st.success("✅ Simulation macroéconomique enregistrée et validée pour le rapport prudentiel.")
-
-# -----------------------------------------------------------------------------
-# 12. DATA CENTER
-# -----------------------------------------------------------------------------
-elif current_page == "📂 Data Center":
-    st.markdown("#### Importation de Portefeuille & Registre Chiffré AES-256")
-    uploaded_file = st.file_uploader("Importer un fichier chiffré (CSV / Excel)", type=["csv", "xlsx"])
-    if uploaded_file is not None:
-        try:
-            df_imported = pd.read_csv(uploaded_file) if uploaded_file.name.endswith('.csv') else pd.read_excel(uploaded_file)
-            st.success(f"✅ Fichier '{uploaded_file.name}' déchiffré et analysé avec succès !")
-            st.dataframe(df_imported.head(10), use_container_width=True)
-        except Exception as e:
-            st.error(f"Erreur : {e}")
 
 # -----------------------------------------------------------------------------
 # 13. HISTORIQUE & AUDIT
@@ -705,7 +744,7 @@ elif current_page == "📜 Historique & Audit":
         col_exp1, col_exp2 = st.columns(2)
         with col_exp1:
             csv_data = df_hist.to_csv(index=False).encode('utf-8')
-            st.download_button("📥 Télécharger la Piste d'Audit (CSV)", data=csv_data, file_name="piste_audit_uemoa_suisse.csv", mime="text/csv")
+            st.download_button("📥 Télécharger la Piste d'Audit (CSV)", data=csv_data, file_name="piste_audit_global.csv", mime="text/csv")
 
         with col_exp2:
             if historique:
@@ -715,7 +754,7 @@ elif current_page == "📜 Historique & Audit":
                 <head><meta charset="utf-8"><title>Rapport d'Audit Sécurisé</title></head>
                 <body style="font-family: Arial, sans-serif; padding: 40px; color: #0f172a; background: #f8fafc;">
                     <div style="max-width: 700px; margin: auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 1px solid #cbd5e1;">
-                        <h2 style="color: #0f172a; text-align: center;">ATTESTATION OFFICIELLE DE CONFORMITÉ FINMA & BCEAO</h2>
+                        <h2 style="color: #0f172a; text-align: center;">ATTESTATION OFFICIELLE DE CONFORMITÉ GLOBALE (RBI - FINMA - BCEAO)</h2>
                         <p style="text-align: center; color: #64748b;">Standards Bancaires Internationaux — Données Chiffrées au Repos (AES-256)</p>
                         <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;">
                         <p><b>ID Enregistrement :</b> {dossier.get('id')}</p>

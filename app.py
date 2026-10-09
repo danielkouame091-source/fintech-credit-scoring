@@ -2,6 +2,7 @@ import datetime
 import json
 import os
 import uuid
+import hashlib
 import numpy as np
 import pandas as pd
 import plotly.express as px
@@ -70,7 +71,7 @@ st.markdown(
 )
 
 # -----------------------------------------------------------------------------
-# GESTION DE LA PERSISTANCE (JSON) & MODÈLE MACHINE LEARNING
+# GESTION DE LA PERSISTANCE (JSON) & HACHAGE SÉCURISÉ DES MOTS DE PASSE
 # -----------------------------------------------------------------------------
 DATA_FILE = "audit_historique.json"
 
@@ -89,6 +90,9 @@ def sauvegarder_historique(entree):
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(historique, f, ensure_ascii=False, indent=4)
 
+def hacher_mdp(password):
+    return hashlib.sha256(password.encode()).hexdigest()
+
 # Entraînement sécurisé du modèle de Scoring Prudentiel Scikit-Learn
 @st.cache_resource
 def entrainer_modele_scoring():
@@ -104,38 +108,40 @@ def entrainer_modele_scoring():
 ml_model, ml_scaler = entrainer_modele_scoring()
 
 # -----------------------------------------------------------------------------
-# AUTHENTIFICATION & GESTION DES RÔLES (RBAC)
+# AUTHENTIFICATION & GESTION DES RÔLES (RBAC AVEC HACHAGE CRYPTOGRAPHIQUE)
 # -----------------------------------------------------------------------------
 if "authentifie" not in st.session_state:
     st.session_state.authentifie = False
 
 if not st.session_state.authentifie:
-    st.markdown("<h2 style='text-align: center; color: #60a5fa;'>🔐 Portail d'Accès Sécurisé — Institutionnel</h2>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; color: #cbd5e1;'>Plateforme de Gestion des Risques, Scoring IA & Conformité (Bâle III / UEMOA / CEMAC)</p>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align: center; color: #60a5fa;'>🔐 Portail d'Accès Sécurisé — Standards SBI / Union Bank</h2>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #cbd5e1;'>Authentification chiffrée, Traçabilité des Flux & Conformité Anti-Fraude</p>", unsafe_allow_html=True)
     
     col_l1, col_l2, col_l3 = st.columns([1, 2, 1])
     with col_l2:
         with st.form("form_login"):
-            username = st.text_input("Identifiant Professionnel", value="analyste.risques@fintech.af")
+            username = st.text_input("Identifiant Professionnel", value="analyste.risques@unionbank.fin")
             password = st.text_input("Mot de passe sécurisé", type="password", value="secure2026")
             role_choisi = st.selectbox("Profil d'Habilitation (RBAC)", [
                 "🔍 Analyste des Risques & Scoring IA",
                 "⚖️ Directeur des Engagements (Comité de Crédit)",
-                "🚨 Officier de Conformité LCB-FT (CENTIF)",
+                "🚨 Officier de Conformité & Traçage des Fonds (Fraude Cyber)",
                 "📊 Auditeur Régulateur Interne"
             ])
-            submit_login = st.form_submit_button("Authentification & Connexion", use_container_width=True)
+            submit_login = st.form_submit_button("Authentification & Connexion Bancaire", use_container_width=True)
             if submit_login:
+                # Stockage du hachage pour conformité de sécurité
                 st.session_state.authentifie = True
                 st.session_state.username = username
                 st.session_state.user_role = role_choisi
+                st.session_state.pwd_hash = hacher_mdp(password)
                 st.rerun()
     st.stop()
 
 # -----------------------------------------------------------------------------
 # EN-TÊTE & CONTEXTE INSTITUTIONNEL
 # -----------------------------------------------------------------------------
-st.markdown("<h1 style='text-align: center; color: #f8fafc; font-weight: 800;'>HUB FINANCIER & ANTI-FRAUDE PANAFRICAIN</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; color: #f8fafc; font-weight: 800;'>HUB FINANCIER & ANTI-FRAUDE INTERNATIONALE</h1>", unsafe_allow_html=True)
 st.markdown(f"<p style='text-align: center; color: #93c5fd; font-size: 1.05rem;'>Opérateur Connecté : <b>{st.session_state.username}</b> | Habilitation : <b>{st.session_state.user_role}</b></p>", unsafe_allow_html=True)
 
 col_cfg1, col_cfg2 = st.columns(2)
@@ -143,9 +149,9 @@ with col_cfg1:
     zone_reglementaire = st.selectbox(
         "Cadre Réglementaire / Banque Centrale",
         [
-            "UEMOA (BCEAO - Côte d'Ivoire, Sénégal, Mali...)",
-            "CEMAC (BEAC - Cameroun, Gabon, Congo...)",
-            "Afrique de l'Est / M-Pesa (Kenya, Tanzanie...)",
+            "Standards RBI (Reserve Bank of India / State Bank / Union Bank)",
+            "UEMOA (BCEAO - Côte d'Ivoire, Sénégal...)",
+            "CEMAC (BEAC - Cameroun, Gabon...)",
             "Réseau Transfrontalier Panafricain (PAPSS / Afreximbank)",
         ],
     )
@@ -153,10 +159,10 @@ with col_cfg2:
     institution_type = st.selectbox(
         "Établissement Financier Opérateur",
         [
-            "Banque Commerciale (Standards type State Bank of India / Ecobank)",
+            "State Bank of India / Union Bank Standard (Enterprise Core Banking)",
             "Émetteur Monnaie Électronique / Mobile Money (Wave, Orange, MTN, Moov)",
-            "FinTech / Neobanque Panafricaine",
-            "Cellule Nationale de Renseignement Financier (CENTIF)",
+            "FinTech / Neobanque Panafricaine & Asiatique",
+            "Cellule de Renseignement Financier & Cyber-Fraude (CENTIF / National Cyber Cell)",
         ],
     )
 
@@ -171,7 +177,7 @@ if "active_module" not in st.session_state:
 modules = {
     "🏠 Tableau de bord": "Vue Globale",
     "💳 Banque & Crédit": "Scoring Bâle III (ML)",
-    "🚨 Anti-Fraude": "Gel Comptes Mules",
+    "🚨 Anti-Fraude & Traçage": "Traçage des Fonds & Gel (Style Inde)",
     "📱 Mobile Money": "Scoring Alternatif",
     "🌱 Risque Agricole": "Campagnes Cacao/Café",
     "🌍 PAPSS": "Paiements Transfrontaliers",
@@ -204,7 +210,7 @@ if current_page == "🏠 Tableau de bord":
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("Dossiers Analysés (YTD)", "1,482", delta="+12.4%")
     col2.metric("Taux d'Interception Fraude", "99.4%", delta="+0.8%")
-    col3.metric("Volume Transfrontalier PAPSS", "42.8 Mds FCFA", delta="+15.2%")
+    col3.metric("Fonds Gelés / Séquestrés", "1.42 Mds FCFA", delta="-18.2%")
     col4.metric("Note de Solidité Prudentielle", "A+ (Optimal)", delta="Stable")
 
     st.markdown("---")
@@ -238,7 +244,6 @@ elif current_page == "💳 Banque & Crédit":
         duree_mois = st.slider("Durée du remboursement (Mois)", 1, 60, 18)
         registre_impayes = st.radio("Fichage Centrale des Risques / BIC", ["Aucun incident", "Incident actif / Interdit bancaire"])
 
-    # Prédiction par le modèle Machine Learning
     features_input = ml_scaler.transform([[chiffre_affaires, duree_mois, engagements_encours]])
     prob_defaut = float(ml_model.predict_proba(features_input)[0][1]) * 100
     if registre_impayes == "Incident actif / Interdit bancaire":
@@ -271,29 +276,76 @@ elif current_page == "💳 Banque & Crédit":
             st.error(f"❌ Dossier {dossier['id']} REFUSÉ (Dépassement des seuils prudentiels).")
 
 # -----------------------------------------------------------------------------
-# 3. ANTI-FRAUDE (COMPTES MULES)
+# 3. ANTI-FRAUDE & TRAÇAGE DES FONDS (STYLE BANQUES INDIENNES / SBI)
 # -----------------------------------------------------------------------------
-elif current_page == "🚨 Anti-Fraude":
-    st.markdown("#### Moteur d'Interception & Gel en Cascade (Comptes Mules Inter-réseaux)")
-    c1, c2 = st.columns(2)
-    with c1:
-        utrn = st.text_input("Référence UTRN", f"UTRN-{uuid.uuid4().hex[:10].upper()}")
-        compte_victime = st.text_input("Compte Émetteur / Victime", placeholder="+225...")
-        montant_fraud = st.number_input("Montant Contesté (FCFA)", value=3000000)
-    with c2:
-        plateforme = st.selectbox("Réseau / Opérateur Origine", ["Wave Money", "Orange Money", "MTN MoMo", "Moov Africa", "Virement Interbancaire"])
-        niveau_alerte = st.selectbox("Niveau de Sévérité", ["CRITIQUE (Gel immédiat interbancaire)", "ÉLEVÉ", "MODÉRÉ"])
+elif current_page == "🚨 Anti-Fraude & Traçage":
+    st.markdown("#### 🕵️‍♂️ Moteur de Traçage des Sauts Financiers (Fund Tracing & Multi-Hop Analysis)")
+    st.markdown("Module inspiré des pratiques de cyber-sécurité bancaire en Inde (Suivi des transferts à travers les comptes intermédiaires et gel instantané par API).")
 
-    st.subheader("🕸️ Traçage des Fonds vers les Comptes Complices")
-    fig_net = go.Figure(data=[
-        go.Scatter(x=[0, 1, 1, 2], y=[0, 1, -1, 0], mode='lines', line=dict(width=3, color='#ef4444'), hoverinfo='none'),
-        go.Scatter(x=[0, 1, 1, 2], y=[0, 1, -1, 0], mode='markers+text', text=["Victime", "Mule 1 (Bloqué)", "Mule 2 (Bloqué)", "Tentative Retrait"], textposition="top center", marker=dict(color=['#3b82f6', '#ef4444', '#ef4444', '#f59e0b'], size=22))
+    col_tr1, col_tr2 = st.columns(2)
+    with col_tr1:
+        id_transaction = st.text_input("ID de la Transaction Suspecte", f"TXN-{uuid.uuid4().hex[:8].upper()}")
+        compte_source = st.text_input("Compte Victime / Initial", value="ACC-99281-SBI")
+        montant_initial = st.number_input("Montant Dérobé / Transféré (FCFA / INR)", value=5000000)
+    with col_tr2:
+        canal_fraude = st.selectbox("Canal de la Fraude", ["UPI / Mobile Instantané", "Virement Interbancaire NEFT/RTGS", "Carte Bancaire / ATM Withdrawal", "Portefeuille Numérique"])
+        delai_signalement = st.slider("Délai de signalement (Minutes après la fraude)", 5, 120, 20)
+
+    # Simulation d'un traçage multi-sauts (Multi-Hop Tracing)
+    st.markdown("---")
+    st.subheader("📊 Cartographie des Sauts Financiers (Fund Trail Path)")
+    
+    # Génération dynamique des nœuds de traçage
+    hop_1 = f"Mule A ({int(montant_initial * 0.95):,} transférés)"
+    hop_2 = f"Mule B ({int(montant_initial * 0.82):,} répartis)"
+    hop_3 = f"Compte Final / Conversion Crypto ou Cash"
+
+    fig_trace = go.Figure(data=[
+        go.Scatter(x=[0, 1, 2, 3], y=[0, 0, 0, 0], mode='lines', line=dict(width=4, color='#ef4444'), hoverinfo='none'),
+        go.Scatter(
+            x=[0, 1, 2, 3], 
+            y=[0, 0, 0, 0], 
+            mode='markers+text', 
+            text=[f"Source\n{compte_source}", hop_1, hop_2, hop_3], 
+            textposition="top center", 
+            marker=dict(color=['#3b82f6', '#f59e0b', '#ef4444', '#7f1d1d'], size=26)
+        )
     ])
-    fig_net.update_layout(showlegend=False, paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", xaxis=dict(showgrid=False, zeroline=False, showticklabels=False), yaxis=dict(showgrid=False, zeroline=False, showticklabels=False))
-    st.plotly_chart(fig_net, use_container_width=True)
+    fig_trace.update_layout(
+        showlegend=False, 
+        paper_bgcolor="rgba(0,0,0,0)", 
+        plot_bgcolor="rgba(0,0,0,0)", 
+        xaxis=dict(showgrid=False, zeroline=False, showticklabels=False), 
+        yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+        margin=dict(t=50, b=50)
+    )
+    st.plotly_chart(fig_trace, use_container_width=True)
 
-    if st.button("🚨 DÉCLENCHER LE GEL MULTI-RÉSEAUX INSTANTANÉ"):
-        st.error(f"🛑 ORDRE DE SÉQUESTRE EXÉCUTÉ — UTRN : {utrn} bloqué simultanément sur l'ensemble des passerelles partenaires.")
+    # Configuration du gel instantané (Instant Lien / Freeze)
+    st.markdown("#### ⚡ Configuration du Gel Automatique (Style National Cyber Crime Portal)")
+    col_g1, col_g2 = st.columns(2)
+    with col_g1:
+        niveau_gel = st.selectbox("Portée du Gel des Comptes", [
+            "Gel Total (Source + Tous les Sauts Intermédiaires)",
+            "Gel Partiel (Bloquer uniquement le montant contesté sur le 1er saut)",
+            "Mise en attente de la chambre de compensation"
+        ])
+    with col_g2:
+        action_atm = st.checkbox("Bloquer simultanément les cartes associées et l'accès ATM", value=True)
+
+    if st.button("🛑 EXÉCUTER LE GEL AUTOMATISÉ ET NOTIFIER LES PARTENAIRES"):
+        alerte_id = f"ALERT-IND-{uuid.uuid4().hex[:6].upper()}"
+        dossier_fraude = {
+            "id": alerte_id,
+            "date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
+            "client": f"Traçage {id_transaction}",
+            "montant": montant_initial,
+            "decis": "GELÉ & TRAACÉ",
+            "pd": f"{delai_signalement} min (Interception)",
+            "auteur": st.session_state.username
+        }
+        sauvegarder_historique(dossier_fraude)
+        st.error(f"🚨 SUCCÈS : Ordre de gel de niveau bancaire émis sous l'ID `{alerte_id}`. Les fonds ont été bloqués sur les 3 comptes intermédiaires avant conversion finale.")
 
 # -----------------------------------------------------------------------------
 # 4. MOBILE MONEY
@@ -355,7 +407,7 @@ elif current_page == "📂 Data Center":
     st.markdown("---")
     st.subheader("Connecteurs Institutionnels Actifs")
     df_src = pd.DataFrame({
-        "Source": ["BCEAO / BEAC", "Bureau d'Information sur le Crédit (BIC)", "Réseau PAPSS", "Passerelles Mobile Money"],
+        "Source": ["BCEAO / Reserve Bank of India (RBI)", "Bureau d'Information sur le Crédit (BIC)", "Réseau PAPSS", "Passerelles Mobile Money / UPI"],
         "Type": ["Réglementaire", "Historique", "Transfrontalier", "Opérationnel"],
         "Statut": ["Connecté (API)", "Actif", "Sécurisé", "Temps Réel"]
     })
@@ -379,24 +431,23 @@ elif current_page == "📜 Historique & Audit":
         with col_exp2:
             if historique:
                 dossier = historique[0]
-                # Génération d'un rapport HTML professionnel interactif et imprimable
                 html_report = f"""
                 <html>
                 <head><meta charset="utf-8"><title>Rapport d'Analyse des Risques</title></head>
                 <body style="font-family: Arial, sans-serif; padding: 30px; color: #0f172a; background: #f8fafc;">
                     <div style="max-width: 700px; margin: auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-                        <h2 style="color: #1e3a8a; text-align: center;">RAPPORT OFFICIEL D'ANALYSE DES RISQUES FINANCIERS</h2>
-                        <p style="text-align: center; color: #64748b;">Plateforme Panafricaine FinTech & Anti-Fraude (Bâle III / BCEAO)</p>
+                        <h2 style="color: #1e3a8a; text-align: center;">RAPPORT OFFICIEL D'ANALYSE DES RISQUES & FRAUDES</h2>
+                        <p style="text-align: center; color: #64748b;">Plateforme de Gestion des Risques (Standards SBI / Union Bank / BCEAO)</p>
                         <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;">
                         <p><b>Référence Dossier :</b> {dossier.get('id')}</p>
                         <p><b>Date d'Analyse :</b> {dossier.get('date')}</p>
-                        <p><b>Client / Emprunteur :</b> {dossier.get('client')}</p>
-                        <p><b>Montant Demandé :</b> {dossier.get('montant'):,.0f} FCFA</p>
-                        <p><b>Probabilité de Défaut (PD - IA) :</b> {dossier.get('pd')}</p>
-                        <p><b>Décision Prudentielle :</b> <span style="color: {'green' if dossier.get('decis')=='APPROUVÉ' else 'red'}; font-weight: bold;">{dossier.get('decis')}</span></p>
-                        <p><b>Analyste Responsable :</b> {dossier.get('auteur', 'Système')}</p>
+                        <p><b>Détails / Client :</b> {dossier.get('client')}</p>
+                        <p><b>Montant Impliqué :</b> {dossier.get('montant'):,.0f} FCFA / INR</p>
+                        <p><b>Statut / Évaluation :</b> <span style="color: {'green' if 'APPROUVÉ' in dossier.get('decis') else 'red'}; font-weight: bold;">{dossier.get('decis')}</span></p>
+                        <p><b>Indicateur Clé :</b> {dossier.get('pd')}</p>
+                        <p><b>Opérateur Responsable :</b> {dossier.get('auteur', 'Système')}</p>
                         <br>
-                        <p style="font-size: 0.9rem; color: #475569;"><i>Ce document certifie que l'analyse a été conduite conformément aux normes de modélisation prédictive du risque de crédit.</i></p>
+                        <p style="font-size: 0.9rem; color: #475569;"><i>Ce document certifie l'exécution des protocoles de traçage multi-sauts et de sécurisation des actifs financiers.</i></p>
                     </div>
                 </body>
                 </html>
@@ -413,8 +464,8 @@ elif current_page == "📜 Historique & Audit":
     if st.button("📄 Transmettre le Flux ISO 20022 (XML) au Régulateur"):
         st.json({
             "Document": {
-                "MsgId": f"CENTIF-{uuid.uuid4().hex[:8].upper()}",
-                "Status": "Certifié conforme, chiffré et transmis aux serveurs de la BCEAO / CENTIF"
+                "MsgId": f"CENTIF-CYBER-{uuid.uuid4().hex[:8].upper()}",
+                "Status": "Certifié conforme, chiffré et transmis aux serveurs de surveillance bancaire"
             }
         })
 

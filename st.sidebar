@@ -12,3 +12,8 @@ elif menu_selection == "Analyse de Risque":
 elif menu_selection == "Simulateur What-If":
     # C'ICI QU'IL FAUT COLLER LA FONCTION ET L'APPELER
     render_what_if_simulator()
+# EXEMPLE : Ajoutez l'option dans votre selectbox ou radio de la sidebar
+menu_option = st.sidebar.selectbox(
+    "Navigation Principale", 
+    ["Accueil", "Analyse de Crédit", "Scoring Professionnel & Sécurité"]  # <--- AJOUTEZ CETTE LIGNE
+)

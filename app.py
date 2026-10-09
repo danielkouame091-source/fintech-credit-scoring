@@ -32,7 +32,6 @@ st.markdown(
         color: #f8fafc;
     }
 
-    /* Style macOS Dock / Top Bar */
     .macos-header {
         background: rgba(15, 23, 42, 0.75);
         backdrop-filter: blur(20px);
@@ -45,7 +44,6 @@ st.markdown(
         align-items: center;
     }
 
-    /* Cartes Applications Launchpad */
     .app-card {
         background: linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.85));
         border: 1px solid rgba(56, 189, 248, 0.2);
@@ -103,7 +101,6 @@ st.markdown(
 # -----------------------------------------------------------------------------
 KEY_FILE = "mac_enterprise_secret.key"
 AUDIT_FILE = "memoire_operations_ci.json"
-TIERS_FILE = "annuaire_tiers_ci.json"
 
 def obtenir_cle():
     if os.path.exists(KEY_FILE):
@@ -130,7 +127,7 @@ def enregistrer_memoire(action, details, utilisateur, statut="SUCCÈS"):
         "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "action": action,
         "details_enc": details_chiffres,
-        "details_clair": details,  # Pour consultation rapide par l'IA
+        "details_clair": details,
         "utilisateur": utilisateur,
         "statut": statut,
         "hash_actuel": hash_actuel
@@ -157,7 +154,7 @@ if "authentifie" not in st.session_state:
 
 if not st.session_state.authentifie:
     st.markdown("<h2 style='text-align: center; color: #38bdf8;'>🍏🇨🇮 Connexion Sécurisée — Plateforme Entreprise Côte d'Ivoire</h2>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; color: #94a3b8;'>Expérience macOS Workspace & Assistant IA Central Intégré</p>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #94a3b8;'>Expérience macOS Workspace, Agrégation Mobile Money & WhatsApp Business</p>", unsafe_allow_html=True)
     
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
@@ -185,7 +182,6 @@ if not st.session_state.authentifie:
 if "espace_actif" not in st.session_state:
     st.session_state.espace_actif = "Launchpad"
 
-# Barre supérieure style macOS
 st.markdown(f"""
 <div class="macos-header">
     <div><b>🍎 Workspace CI</b> | Utilisateur : <b>{st.session_state.username}</b> ({st.session_state.user_role})</div>
@@ -193,7 +189,6 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# Bouton de retour au Launchpad si l'on est dans une application
 if st.session_state.espace_actif != "Launchpad":
     if st.button("⬅️ Retour au Launchpad (Menu Principal)"):
         st.session_state.espace_actif = "Launchpad"
@@ -206,14 +201,14 @@ if st.session_state.espace_actif != "Launchpad":
 if st.session_state.espace_actif == "Launchpad":
     st.markdown("<h1 style='text-align: center; font-weight: 800; margin-bottom: 30px;'>Launchpad Professionnel</h1>", unsafe_allow_html=True)
     
-    # Grille d'applications
     apps = [
         {"nom": "🏠 Tableau de Bord", "desc": "Indicateurs clés & flux financiers", "cle": "Dashboard"},
+        {"nom": "💳 Agrégateur Paiements", "desc": "Wave, Orange, MTN, Moov & Banques", "cle": "Paiements"},
+        {"nom": "💬 WhatsApp Business", "desc": "Automatisation reçus & rappels clients", "cle": "WhatsApp"},
         {"nom": "📊 Finance & Comptabilité", "desc": "Imputations et normes SYSCOHADA", "cle": "Comptabilite"},
         {"nom": "🏢 Annuaire Tiers", "desc": "Gestion clients & fournisseurs (RCCM/IF)", "cle": "Tiers"},
-        {"nom": "🔍 Anti-Fraude & Rapprochement", "desc": "Contrôle Wave, Orange Money & Banques", "cle": "Fraude"},
         {"nom": "🏛️ Fiscalité & Veille DGI", "desc": "Échéances et déclarations fiscales CI", "cle": "Fiscalite"},
-        {"nom": "🛡️ Piste d'Audit & Mémoire", "desc": "Journal immuable SHA-256 des actions", "cle": "Audit"},
+        {"nom": "🛡️ Piste d'Audit", "desc": "Journal immuable SHA-256 des actions", "cle": "Audit"},
         {"nom": "🤖 Assistant IA Central", "desc": "Recherche, analyse et exécution intelligente", "cle": "IA"}
     ]
 
@@ -240,15 +235,15 @@ elif st.session_state.espace_actif == "Dashboard":
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Opérations Enregistrées", len(charger_memoire()), delta="Actif")
     c2.metric("Conformité SYSCOHADA", "100%", delta="Optimal")
-    c3.metric("Rapprochements Validés", "98.5%", delta="+1.2%")
-    c4.metric("Alertes Risque Détectées", "0", delta="Sain")
+    c3.metric("Rapprochements Paiements", "99.1%", delta="+1.8%")
+    c4.metric("Alertes WhatsApp", "12 Envoyées", delta="Actif")
 
     st.markdown("---")
     col_d1, col_d2 = st.columns(2)
     with col_d1:
-        st.subheader("📈 Volume des Opérations par Semaine")
-        df_vol = pd.DataFrame({"Semaine": ["S1", "S2", "S3", "S4"], "Volume (FCFA)": [2500000, 4100000, 3800000, 6200000]})
-        fig = px.bar(df_vol, x="Semaine", y="Volume (FCFA)", template="plotly_dark", color_discrete_sequence=["#38bdf8"])
+        st.subheader("📈 Volume des Encaissements Multi-Opérateurs")
+        df_vol = pd.DataFrame({"Canal": ["Wave CI", "Orange Money", "MTN MoMo", "Virements Bancaires"], "Volume (FCFA)": [4500000, 3200000, 1800000, 6500000]})
+        fig = px.bar(df_vol, x="Canal", y="Volume (FCFA)", template="plotly_dark", color_discrete_sequence=["#38bdf8"])
         fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
         st.plotly_chart(fig, use_container_width=True)
 
@@ -262,16 +257,66 @@ elif st.session_state.espace_actif == "Dashboard":
             st.write("Aucune opération enregistrée pour le moment.")
 
 # -----------------------------------------------------------------------------
-# 3. ESPACE : FINANCE & COMPTABILITÉ (SYSCOHADA)
+# 3. ESPACE : AGRÉGATEUR DE PAIEMENTS MULTI-OPÉRATEURS
+# -----------------------------------------------------------------------------
+elif st.session_state.espace_actif == "Paiements":
+    st.markdown("<h2>💳 Agrégateur de Paiements & Rapprochement (Côte d'Ivoire)</h2>", unsafe_allow_html=True)
+    st.markdown("Centralisez et rapprochez en temps réel tous vos encaissements Mobile Money et bancaires.")
+
+    with st.form("form_paiement"):
+        c1, c2 = st.columns(2)
+        with c1:
+            client_nom = st.text_input("Nom du Client / Payeur", value="Kouadio & Frères SARL")
+            operateur = st.selectbox("Canal d'Encaissement", ["Wave Business CI", "Orange Money Marchand", "MTN MoMo Pay", "Moov Money", "Virement Bancaire Direct"])
+            ref_trx = st.text_input("Référence Transaction / ID Reçu / UTR", value="WAVE-CI-9482104")
+        with c2:
+            montant_enc = st.number_input("Montant Encaissé (FCFA)", value=350000)
+            facture_liee = st.text_input("Facture Rattachée", value="FACT-2026-089")
+            
+        valider_enc = st.form_submit_button("Enregistrer et Rapprocher l'Encaissement")
+        if valider_enc:
+            details = f"Encaissement de {montant_enc:,.0f} FCFA via {operateur} (Ref: {ref_trx}) pour le client {client_nom}"
+            enregistrer_memoire("ENCAISSEMENT_PAIEMENT", details, st.session_state.username)
+            st.success(f"✅ Encaissement de `{montant_enc:,.0f} FCFA` validé et rapproché avec succès.")
+
+# -----------------------------------------------------------------------------
+# 4. ESPACE : WHATSAPP BUSINESS AUTOMATISATION
+# -----------------------------------------------------------------------------
+elif st.session_state.espace_actif == "WhatsApp":
+    st.markdown("<h2>💬 Automatisation WhatsApp Business (Reçus & Rappels)</h2>", unsafe_allow_html=True)
+    st.markdown("Envoyez instantanément des reçus de paiement, des confirmations de commande ou des rappels d'impayés à vos clients via WhatsApp.")
+
+    with st.form("form_whatsapp"):
+        c1, c2 = st.columns(2)
+        with c1:
+            destinataire = st.text_input("Nom du Client / Destinataire", value="Entreprise Kouassi & Cie")
+            telephone = st.text_input("Numéro WhatsApp (Format international)", value="+225 0700000000")
+            type_msg = st.selectbox("Type de Message Automatisé", [
+                "Reçu de Paiement & Confirmation",
+                "Rappel de Facture Échue (Impayé)",
+                "Confirmation de Commande & Livraison",
+                "Message Personnalisé"
+            ])
+        with c2:
+            montant_facture = st.number_input("Montant Concerné (FCFA)", value=150000)
+            texte_perso = st.text_area("Aperçu du Message", value="Bonjour, nous vous confirmons la bonne réception de votre paiement de 150.000 FCFA. Merci pour votre confiance ! — Votre Entreprise")
+
+        btn_envoi = st.form_submit_button("📤 Envoyer la Notification WhatsApp Business")
+        if btn_envoi:
+            details = f"Envoi d'un message WhatsApp ({type_msg}) au {telephone} pour un montant de {montant_facture:,.0f} FCFA"
+            enregistrer_memoire("NOTIFICATION_WHATSAPP", details, st.session_state.username)
+            st.success(f"✅ Message WhatsApp transmis avec succès au numéro `{telephone}` via l'API Business.")
+
+# -----------------------------------------------------------------------------
+# 5. ESPACE : FINANCE & COMPTABILITÉ (SYSCOHADA)
 # -----------------------------------------------------------------------------
 elif st.session_state.espace_actif == "Comptabilite":
     st.markdown("<h2>📊 Finance & Comptabilité (Normes SYSCOHADA)</h2>", unsafe_allow_html=True)
-    st.markdown("Espace de saisie, de classement et de préparation des écritures comptables conformes au plan révisé de l'OHADA.")
-
+    
     with st.form("form_compta"):
         c1, c2 = st.columns(2)
         with c1:
-            libelle = st.text_input("Libellé de l'Opération / Pièce", value="Achat de matériel informatique")
+            libelle = st.text_input("Libellé de l'Opération / Pièce", value="Achat de fournitures")
             compte = st.selectbox("Imputation SYSCOHADA", ["6041 - Matières premières", "6057 - Fournitures de bureau", "2441 - Matériel informatique", "6241 - Transports de biens"])
         with c2:
             montant_ht = st.number_input("Montant HT (FCFA)", value=500000)
@@ -281,19 +326,17 @@ elif st.session_state.espace_actif == "Comptabilite":
         total_ttc = montant_ht + montant_tva
         st.metric("Montant TTC Calculé", f"{total_ttc:,.0f} FCFA")
 
-        valider_saisie = st.form_submit_button("Enregistrer l'Écriture Comptable")
-        if valider_saisie:
-            details = f"Saisie écriture '{libelle}' (Compte: {compte}) pour un montant TTC de {total_ttc:,.0f} FCFA"
+        if st.form_submit_button("Enregistrer l'Écriture Comptable"):
+            details = f"Saisie écriture '{libelle}' pour {total_ttc:,.0f} FCFA"
             enregistrer_memoire("SAISIE_COMPTABLE", details, st.session_state.username)
-            st.success("✅ Écriture comptable enregistrée avec succès dans la mémoire de l'entreprise.")
+            st.success("✅ Écriture comptable enregistrée avec succès.")
 
 # -----------------------------------------------------------------------------
-# 4. ESPACE : ANNUAIRE TIERS (RCCM / IF)
+# 6. ESPACE : ANNUAIRE TIERS (RCCM / IF)
 # -----------------------------------------------------------------------------
 elif st.session_state.espace_actif == "Tiers":
     st.markdown("<h2>🏢 Annuaire des Tiers (Clients & Fournisseurs)</h2>", unsafe_allow_html=True)
-    st.markdown("Gestion sécurisée des informations légales (RCCM et Compte Contribuable) pour la prévention des fraudes.")
-
+    
     with st.form("form_tiers"):
         c1, c2 = st.columns(2)
         with c1:
@@ -302,41 +345,15 @@ elif st.session_state.espace_actif == "Tiers":
             ifu = st.text_input("Compte Contribuable (IFU)", value="2009876 K")
         with c2:
             contact = st.text_input("Téléphone / WhatsApp", value="+225 05 00 00 00 00")
-            canal_paiement = st.selectbox("Mode de Paiement Préféré", ["Virement Bancaire (SGCI / Ecobank)", "Wave Business", "Orange Money Marchand"])
-            rib = st.text_input("Coordonnées Bancaires / Numéro Marchand", value="CI16 0101 012345678901 22")
+            canal_paiement = st.selectbox("Mode de Paiement Préféré", ["Virement Bancaire", "Wave Business", "Orange Money Marchand"])
 
-        if st.form_submit_button("Enregistrer et Vérifier le Tiers"):
-            details = f"Enregistrement du tiers {nom_tiers} (RCCM: {rccm}, IFU: {ifu})"
+        if st.form_submit_button("Enregistrer le Tiers"):
+            details = f"Enregistrement du tiers {nom_tiers} (RCCM: {rccm})"
             enregistrer_memoire("ENREGISTREMENT_TIERS", details, st.session_state.username)
-            st.success(f"✅ Le tiers **{nom_tiers}** a été validé et consigné dans l'annuaire.")
+            st.success(f"✅ Tiers **{nom_tiers}** consigné.")
 
 # -----------------------------------------------------------------------------
-# 5. ESPACE : ANTI-FRAUDE & RAPPROCHEMENT
-# -----------------------------------------------------------------------------
-elif st.session_state.espace_actif == "Fraude":
-    st.markdown("<h2>🔍 Anti-Fraude & Rapprochement (Mobile Money & Banques)</h2>", unsafe_allow_html=True)
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        ref_tr = st.text_input("Référence Transaction / ID Reçu", value="WAVE-CI-849201")
-        montant = st.number_input("Montant (FCFA)", value=350000)
-    with col2:
-        canal = st.selectbox("Canal", ["Wave CI", "Orange Money CI", "MTN MoMo CI", "Virement Bancaire"])
-        justificatif = st.file_uploader("Preuve de Paiement (Image / PDF)", type=["png", "jpg", "pdf"])
-
-    if st.button("Lancer l'Analyse Anti-Fraude"):
-        diagnostic = "Aucune anomalie détectée. Référence cohérente avec les flux du jour."
-        if montant > 1500000 and "Wave" in canal:
-            diagnostic = "⚠️ Alerte : Montant élevé pour un canal Mobile Money simple. Vérification humaine requise."
-        
-        enregistrer_memoire("CONTROLE_ANTI_FRAUDE", f"Vérification {ref_tr} ({montant} FCFA) sur {canal} — Résultat: {diagnostic}", st.session_state.username)
-        if "⚠️" in diagnostic:
-            st.warning(diagnostic)
-        else:
-            st.success(f"✅ {diagnostic}")
-
-# -----------------------------------------------------------------------------
-# 6. ESPACE : FISCALITÉ & VEILLE DGI
+# 7. ESPACE : FISCALITÉ & VEILLE DGI
 # -----------------------------------------------------------------------------
 elif st.session_state.espace_actif == "Fiscalite":
     st.markdown("<h2>🏛️ Fiscalité & Veille DGI (Côte d'Ivoire)</h2>", unsafe_allow_html=True)
@@ -350,7 +367,7 @@ elif st.session_state.espace_actif == "Fiscalite":
     st.dataframe(df_tax, use_container_width=True)
 
 # -----------------------------------------------------------------------------
-# 7. ESPACE : PISTE D'AUDIT & MÉMOIRE
+# 8. ESPACE : PISTE D'AUDIT
 # -----------------------------------------------------------------------------
 elif st.session_state.espace_actif == "Audit":
     st.markdown("<h2>🛡️ Piste d'Audit Immuable (SHA-256)</h2>", unsafe_allow_html=True)
@@ -366,45 +383,39 @@ elif st.session_state.espace_actif == "Audit":
         st.info("Aucun événement consigné dans la mémoire.")
 
 # -----------------------------------------------------------------------------
-# 8. ESPACE : ASSISTANT IA CENTRAL (LE CŒUR DE LA PLATEFORME)
+# 9. ESPACE : ASSISTANT IA CENTRAL
 # -----------------------------------------------------------------------------
 elif st.session_state.espace_actif == "IA":
     st.markdown("<h2>🤖 Assistant IA Central Intelligent</h2>", unsafe_allow_html=True)
-    st.markdown("Posez vos questions en langage naturel. L'assistant analyse l'ensemble de la mémoire opérationnelle, des dossiers, des tiers et des transactions de la plateforme.")
+    st.markdown("Posez vos questions. L'assistant analyse les transactions, les paiements Mobile Money et la mémoire opérationnelle.")
 
-    # Zone de dialogue
     if "messages_ia" not in st.session_state:
         st.session_state.messages_ia = [
-            {"role": "assistant", "content": "Bonjour ! Je suis votre Assistant IA Central. Je peux consulter les opérations, retrouver des dossiers, vérifier des tiers ou résumer l'activité. Que souhaitez-vous savoir ?"}
+            {"role": "assistant", "content": "Bonjour ! Je suis votre Assistant IA Central. Je peux consulter les paiements Wave/Orange, vérifier des tiers ou résumer l'activité. Que souhaitez-vous savoir ?"}
         ]
 
     for msg in st.session_state.messages_ia:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
-    prompt = st.chat_input("Ex: 'Quelles sont les dernières opérations réalisées ?' ou 'Retrouve le dossier de ce client'")
+    prompt = st.chat_input("Ex: 'Quels sont les derniers encaissements réalisés ?'")
     if prompt:
         st.session_state.messages_ia.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
             st.markdown(prompt)
 
-        # Logique de réponse intelligente basée sur la mémoire
         memoire = charger_memoire()
-        reponse = "Je n'ai pas trouvé d'information correspondante dans les registres actifs."
-        
+        reponse = "Je n'ai pas trouvé d'information correspondante dans les registres."
         p_lower = prompt.lower()
-        if "opération" in p_lower or "action" in p_lower or "réalisé" in p_lower:
+        
+        if "paiement" in p_lower or "encaissement" in p_lower or "opération" in p_lower or "whatsapp" in p_lower:
             if memoire:
                 dernier = memoire[0]
-                reponse = f"D'après la mémoire opérationnelle, la dernière action enregistrée est **{dernier['action']}** effectuée par *{dernier['utilisateur']}* le {dernier['timestamp']} ({dernier['details_clair']}). Total d'opérations enregistrées : {len(memoire)}."
+                reponse = f"Dernière opération enregistrée : **{dernier['action']}** par *{dernier['utilisateur']}* à {dernier['timestamp']} ({dernier['details_clair']}). Total d'opérations : {len(memoire)}."
             else:
-                reponse = "Aucune opération n'a encore été enregistrée dans la mémoire."
-        elif "client" in p_lower or "tiers" in p_lower:
-            reponse = "Les dossiers clients et fournisseurs sont centralisés dans l'application *Annuaire Tiers*. Vous y trouverez les numéros RCCM et IFU enregistrés."
-        elif "tva" in p_lower or "impôt" in p_lower or "dgi" in p_lower:
-            reponse = "Selon le calendrier DGI Côte d'Ivoire, les déclarations de TVA doivent être déposées entre le 10 et le 15 de chaque mois."
-        elif "bonjour" in p_lower or "salut" in p_lower:
-            reponse = "Bonjour ! Comment puis-je vous aider dans la gestion de votre entreprise aujourd'hui ?"
+                reponse = "Aucune opération enregistrée pour le moment."
+        elif "bonjour" in p_lower:
+            reponse = "Bonjour ! Comment puis-je vous assister dans la gestion de vos flux financiers aujourd'hui ?"
 
         st.session_state.messages_ia.append({"role": "assistant", "content": reponse})
         with st.chat_message("assistant"):

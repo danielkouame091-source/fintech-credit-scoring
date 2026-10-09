@@ -1,15 +1,3 @@
-Voici le code complet et mis à jour de votre application **`app.py`**.
-
-Cette version intègre l'ensemble des améliorations de niveau institutionnel global (Suisse, UEMOA, et standards avancés de l'Inde avec la RBI et la NPCI) :
-
-1. **Module Machine Learning Explicable (XAI)** : Analyse visuelle par barres d'impact (style attribution des poids) pour justifier instantanément la probabilité de défaut (PD) et satisfaire le principe de transparence des prêts (*Fair Lending*).
-2. **Tableau de Bord d'Investigation SOC Interactif** : Un système de gestion des incidents de sécurité permettant non seulement de journaliser, mais aussi de modifier en direct le statut de résolution des alertes.
-3. **Module de Stress-Test Liquidité Bâle III (LCR / NSFR)** : Calcul dynamique des ratios de couverture des liquidités à 30 jours face à un scénario de fuite massive de dépôts.
-4. **Conservation de tous les modules précédents** (Account Aggregator, FRM Anti-Fraude, Aadhaar Vault avec tokenisation, Réconciliation UPI/UTR, et menu 3D Glassmorphic haut de gamme).
-
-Remplacez entièrement votre fichier **`app.py`** par le code ci-dessous :
-
-```python
 import datetime
 import json
 import os
@@ -395,7 +383,6 @@ elif current_page == "💳 Banque & Crédit (XAI)":
     st.subheader("🔍 Explicabilité du Modèle IA (Analyse d'Impact des Facteurs - XAI / SHAP)")
     st.markdown("<p style='color: #cbd5e1;'>Contribution de chaque variable dans la décision de scoring du modèle de régression logistique :</p>", unsafe_allow_html=True)
     
-    # Calcul d'impact simulé (XAI waterfall / feature importance)
     impact_ca = - (chiffre_affaires / 1000000) * 1.5
     impact_duree = (duree_mois / 10) * 0.8
     impact_charges = (engagements_encours / 100000) * 2.1
@@ -498,14 +485,14 @@ elif current_page == "🏛️ Aadhaar/PAN Vault":
 
     col_v1, col_v2 = st.columns(2)
     with col_v1:
-        id_national = st.text_input("Numéro Identifiant / Aadhaar / PAN (À Tokeniser)", value="XXXX-XXXX-8921")
+        id_national = st.text_input("Numéro Identifiant / [Aadhaar/PAN Redacted] (À Tokeniser)", value="XXXX-XXXX-8921")
         intitule_compte = st.text_input("Numéro de Compte Bancaire de Dépôt", value="IN34UTIB0001482910")
     with col_v2:
         niveau_chiffrement = st.selectbox("Protocole de Sécurité Vault", ["AES-256 avec HSM Matériel dédié", "Chiffrement Elliptique (ECC P-384)"])
 
     if st.button("🔒 Générer le Jeton Cryptographique (Token) d'Isolation"):
         token_gen = f"TOK-VALT-{uuid.uuid4().hex[:12].upper()}"
-        enregistrer_log_soc(f"Tokenisation effectuée dans l'Aadhaar/PAN Vault sous l'ID {token_gen}", "INFO", "RÉSOLU")
+        enregistrer_log_soc(f"Tokenisation effectuée dans le coffre-fort sous l'ID {token_gen}", "INFO", "RÉSOLU")
         st.success(f"✅ Données sécurisées dans le coffre-fort. Jeton de substitution généré en toute sécurité : `{token_gen}` (Les données en clair ne sont jamais exposées).")
 
 # -----------------------------------------------------------------------------
@@ -747,7 +734,6 @@ elif current_page == "🚨 SOC Playbook":
 
     logs_soc = charger_logs_soc()
     if logs_soc:
-        # Affichage interactif pour changer le statut des incidents
         selected_inc = st.selectbox("Sélectionner un Incident à Traiter", [log.get('id_incident') + " - " + log.get('evenement')[:40] for log in logs_soc])
         inc_id_choisi = selected_inc.split(" - ")[0]
 
@@ -842,5 +828,3 @@ elif current_page == "⚙️ Paramètres":
         enregistrer_log_soc(f"Déconnexion de {st.session_state.username}", "INFO", "RÉSOLU")
         st.session_state.authentifie = False
         st.rerun()
-
-```

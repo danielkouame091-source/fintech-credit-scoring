@@ -8,12 +8,18 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import StandardScaler
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib import colors
 
 # -----------------------------------------------------------------------------
 # CONFIGURATION DE LA PAGE & STYLE INSTITUTIONNEL (NETteté & 3D)
 # -----------------------------------------------------------------------------
 st.set_page_config(
-    page_title="Plateforme FinTech & Anti-Fraude Pan-Africaine | Institutionnel",
+    page_title="Plateforme FinTech & Anti-Fraude Pan-Africaine | Enterprise Edition",
     layout="wide",
     initial_sidebar_state="collapsed",
 )
@@ -69,7 +75,7 @@ st.markdown(
 )
 
 # -----------------------------------------------------------------------------
-# GESTION DE LA PERSISTANCE (JSON)
+# GESTION DE LA PERSISTANCE (JSON) & MACHINE LEARNING DE BASE
 # -----------------------------------------------------------------------------
 DATA_FILE = "audit_historique.json"
 
@@ -88,13 +94,56 @@ def sauvegarder_historique(entree):
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(historique, f, ensure_ascii=False, indent=4)
 
+# Entraînement d'un modèle Scikit-Learn de Scoring Prudentiel (Simulation réaliste)
+@st.cache_resource
+def entrainer_modele_scoring():
+    np.random.seed(42)
+    X_train = np.random.rand(500, 3) * np.array([15000000, 60, 500000]) # [CA, Duree, Encours]
+    y_train = (X_train[:, 0] / (X_train[:, 2] + 1) < 5).astype(int) # Règle de défaut simulée
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X_train)
+    model = LogisticRegression()
+    model.fit(X_scaled, y_train)
+    return model, scaler
+
+ml_model, ml_scaler = entrainer_modele_scoring()
+
 # -----------------------------------------------------------------------------
-# EN-TÊTE INSTITUTIONNEL & GESTION DES RÔLES (RBAC)
+# SYSTÈME D'AUTHENTIFICATION & GOUVERNANCE Rôles (RBAC)
+# -----------------------------------------------------------------------------
+if "authentifie" not in st.session_state:
+    st.session_state.authentifie = False
+
+if not st.session_state.authentifie:
+    st.markdown("<h2 style='text-align: center; color: #60a5fa;'>🔐 Authentification Institutionnelle</h2>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #cbd5e1;'>Accès réservé aux auditeurs, analystes et directeurs des risques (MBA Data Science & AI)</p>", unsafe_allow_html=True)
+    
+    col_l1, col_l2, col_l3 = st.columns([1, 2, 1])
+    with col_l2:
+        with st.form("form_login"):
+            username = st.text_input("Identifiant Professionnel", value="analyste.risques")
+            password = st.text_input("Mot de passe", type="password", value="secure2026")
+            role_choisi = st.selectbox("Profil d'Habilitation", [
+                "🔍 Analyste des Risques & Scoring",
+                "⚖️ Directeur des Engagements (Validateur)",
+                "🚨 Officier de Conformité / Anti-Fraude (CENTIF)",
+                "📊 Auditeur Régulateur"
+            ])
+            submit_login = st.form_submit_button("Se connecter à la plateforme", use_container_width=True)
+            if submit_login:
+                st.session_state.authentifie = True
+                st.session_state.username = username
+                st.session_state.user_role = role_choisi
+                st.rerun()
+    st.stop()
+
+# -----------------------------------------------------------------------------
+# EN-TÊTE & CONFIGURATION INSTITUTIONNELLE
 # -----------------------------------------------------------------------------
 st.markdown("<h1 style='text-align: center; color: #f8fafc; font-weight: 800;'>HUB FINANCIER & ANTI-FRAUDE PANAFRICAIN</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; color: #93c5fd; font-size: 1.1rem;'>Système de Gouvernance des Risques, Scoring Prudentiel & Gel Interbancaire</p>", unsafe_allow_html=True)
+st.markdown(f"<p style='text-align: center; color: #93c5fd; font-size: 1.1rem;'>Utilisateur : <b>{st.session_state.username}</b> | Rôle : <b>{st.session_state.user_role}</b></p>", unsafe_allow_html=True)
 
-col_cfg1, col_cfg2, col_cfg3 = st.columns(3)
+col_cfg1, col_cfg2 = st.columns(2)
 with col_cfg1:
     zone_reglementaire = st.selectbox(
         "Cadre Réglementaire / Banque Centrale",
@@ -115,16 +164,6 @@ with col_cfg2:
             "Cellule de Renseignement Financier (CENTIF)",
         ],
     )
-with col_cfg3:
-    user_role = st.selectbox(
-        "Profil Utilisateur (Gouvernance RBAC)",
-        [
-            "🔍 Analyste des Risques & Scoring",
-            "⚖️ Directeur des Engagements (Validateur)",
-            "🚨 Officier de Conformité / Anti-Fraude",
-            "📊 Auditeur Régulateur / CENTIF",
-        ]
-    )
 
 st.markdown("---")
 
@@ -136,14 +175,14 @@ if "active_module" not in st.session_state:
 
 modules = {
     "🏠 Tableau de bord": "Vue Globale",
-    "💳 Banque & Crédit": "Scoring Bâle III",
+    "💳 Banque & Crédit": "Scoring Bâle III (ML)",
     "🚨 Anti-Fraude": "Gel Comptes Mules",
     "📱 Mobile Money": "Scoring Alternatif",
     "🌱 Risque Agricole": "Campagnes Cacao/Café",
     "🌍 PAPSS": "Paiements Transfrontaliers",
     "📈 Stress-Tests": "Résistance Bancaire",
     "📂 Data Center": "Import & Registres",
-    "📜 Historique & Audit": "Conformité ISO",
+    "📜 Historique & Audit": "Conformité ISO & PDF",
     "⚙️ Paramètres": "Paramétrage Global",
 }
 
@@ -161,7 +200,7 @@ for mod_name, mod_desc in modules.items():
 
 current_page = st.session_state.active_module
 st.markdown("---")
-st.markdown(f"<h3 style='color: #60a5fa;'>Module Actif : {current_page} <span style='font-size:0.9rem; color:#cbd5e1; float:right;'>Connecté en tant que : <b>{user_role}</b></span></h3>", unsafe_allow_html=True)
+st.markdown(f"<h3 style='color: #60a5fa;'>Module Actif : {current_page}</h3>", unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
 # 1. TABLEAU DE BORD
@@ -190,10 +229,10 @@ if current_page == "🏠 Tableau de bord":
         st.plotly_chart(fig_pie, use_container_width=True)
 
 # -----------------------------------------------------------------------------
-# 2. BANQUE & CRÉDIT
+# 2. BANQUE & CRÉDIT (AVEC MACHINE LEARNING SCIKIT-LEARN)
 # -----------------------------------------------------------------------------
 elif current_page == "💳 Banque & Crédit":
-    st.markdown("#### Analyse de Solvabilité & Octroi Prudentiel (Bâle III)")
+    st.markdown("#### Modèle Prédictif de Solvabilité (Scikit-Learn / Bâle III)")
     col_cr1, col_cr2 = st.columns(2)
     with col_cr1:
         nom_client = st.text_input("Nom de l'Emprunteur / Entreprise", value="Société Ivoire Agro SARL")
@@ -204,21 +243,23 @@ elif current_page == "💳 Banque & Crédit":
         duree_mois = st.slider("Durée du remboursement (Mois)", 1, 60, 18)
         registre_impayes = st.radio("Fichage Centrale des Bilans / BIC", ["Aucun incident", "Incident actif / Interdit bancaire"])
 
+    # Prédiction par le modèle Machine Learning Scikit-Learn
+    features_input = ml_scaler.transform([[chiffre_affaires, duree_mois, engagements_encours]])
+    prob_defaut = float(ml_model.predict_proba(features_input)[0][1]) * 100
+    if registre_impayes == "Incident actif / Interdit bancaire":
+        prob_defaut = min(99.0, prob_defaut + 40.0)
+
     mensualite = (pret_demande * 1.025) / duree_mois
     taux_endettement = ((engagements_encours + mensualite) / chiffre_affaires) * 100 if chiffre_affaires > 0 else 100
-    prob_defaut = min(95.0, max(1.2, (taux_endettement * 0.8) + (15.0 if registre_impayes == "Incident actif / Interdit bancaire" else 0)))
 
     st.markdown("---")
     m1, m2, m3 = st.columns(3)
     m1.metric("Mensualité Estimée", f"{mensualite:,.0f} FCFA")
     m2.metric("Taux d'Endettement", f"{taux_endettement:.1f} %")
-    m3.metric("Probabilité de Défaut (PD)", f"{prob_defaut:.1f}%")
+    m3.metric("Probabilité de Défaut (IA)", f"{prob_defaut:.1f}%")
 
-    if user_role == "🔍 Analyste des Risques & Scoring":
-        st.info("ℹ️ Votre profil permet de simuler et soumettre le dossier pour validation.")
-    
-    if st.button("💾 Enregistrer et Soumettre le Dossier de Crédit"):
-        decision = "REFUSÉ" if (registre_impayes == "Incident actif / Interdit bancaire" or taux_endettement > 33) else "APPROUVÉ"
+    if st.button("💾 Enregistrer et Soumettre le Dossier ML"):
+        decision = "REFUSÉ" if (registre_impayes == "Incident actif / Interdit bancaire" or taux_endettement > 33 or prob_defaut > 35) else "APPROUVÉ"
         dossier = {
             "id": f"CRED-{uuid.uuid4().hex[:6].upper()}",
             "date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
@@ -229,9 +270,9 @@ elif current_page == "💳 Banque & Crédit":
         }
         sauvegarder_historique(dossier)
         if decision == "APPROUVÉ":
-            st.success(f"✅ Dossier {dossier['id']} APPROUVÉ et enregistré avec succès.")
+            st.success(f"✅ Dossier {dossier['id']} APPROUVÉ par l'algorithme Scikit-Learn.")
         else:
-            st.error(f"❌ Dossier {dossier['id']} REFUSÉ (Non conforme aux normes prudentielles).")
+            st.error(f"❌ Dossier {dossier['id']} REFUSÉ par le modèle de risque.")
 
 # -----------------------------------------------------------------------------
 # 3. ANTI-FRAUDE (COMPTES MULES)
@@ -302,22 +343,18 @@ elif current_page == "📈 Stress-Tests":
     st.metric("Classification IFRS 9", stage)
 
 # -----------------------------------------------------------------------------
-# 8. DATA CENTER (IMPORT DE FICHIERS & REGISTRES)
+# 8. DATA CENTER
 # -----------------------------------------------------------------------------
 elif current_page == "📂 Data Center":
     st.markdown("#### Importation de Portefeuille & Registre des Sources")
-    
     uploaded_file = st.file_uploader("Importer un fichier de transactions ou de crédits (CSV / Excel)", type=["csv", "xlsx"])
     if uploaded_file is not None:
         try:
-            if uploaded_file.name.endswith('.csv'):
-                df_imported = pd.read_csv(uploaded_file)
-            else:
-                df_imported = pd.read_excel(uploaded_file)
+            df_imported = pd.read_csv(uploaded_file) if uploaded_file.name.endswith('.csv') else pd.read_excel(uploaded_file)
             st.success(f"✅ Fichier '{uploaded_file.name}' chargé avec succès !")
             st.dataframe(df_imported.head(10), use_container_width=True)
         except Exception as e:
-            st.error(f- "Erreur lors de la lecture du fichier : {e}")
+            st.error(f"Erreur : {e}")
 
     st.markdown("---")
     st.subheader("Connecteurs Actifs")
@@ -329,31 +366,66 @@ elif current_page == "📂 Data Center":
     st.table(df_src)
 
 # -----------------------------------------------------------------------------
-# 9. HISTORIQUE & AUDIT (AVEC EXPORT EXCEL/CSV)
+# 9. HISTORIQUE & AUDIT (AVEC EXPORT CSV & GÉNÉRATEUR DE RAPPORT PDF)
 # -----------------------------------------------------------------------------
 elif current_page == "📜 Historique & Audit":
-    st.markdown("#### Registre d'Audit & Conformité ISO 20022")
+    st.markdown("#### Registre d'Audit & Conformité ISO 20022 / Génération PDF")
     historique = charger_historique()
     if historique:
         df_hist = pd.DataFrame(historique)
         st.dataframe(df_hist, use_container_width=True)
 
-        # Bouton d'export CSV pour les auditeurs
-        csv_data = df_hist.to_csv(index=False).encode('utf-8')
-        st.download_button(
-            label="📥 Télécharger le Registre d'Audit (CSV)",
-            data=csv_data,
-            file_name="registre_audit_fintech.csv",
-            mime="text/csv"
-        )
-    else:
-        st.info("Aucun dossier enregistré pour l'instant. Effectuez une simulation de crédit.")
+        col_exp1, col_exp2 = st.columns(2)
+        with col_exp1:
+            csv_data = df_hist.to_csv(index=False).encode('utf-8')
+            st.download_button("📥 Télécharger le Registre (CSV)", data=csv_data, file_name="audit_fintech.csv", mime="text/csv")
 
-    if st.button("📄 Générer le Rapport Structuré ISO 20022 (XML)"):
+        with col_exp2:
+            # Générateur de Rapport PDF officiel
+            def generer_pdf(dossier_recent):
+                buffer = io.BytesIO()
+                doc = SimpleDocTemplate(buffer, pagesize=letter)
+                elements = []
+                styles = getSampleStyleSheet()
+                
+                title_style = ParagraphStyle('Title', parent=styles['Heading1'], fontSize=16, textColor=colors.HexColor('#0f172a'), alignment=1)
+                elements.append(Paragraph("RAPPORT OFFICIEL D'ANALYSE DES RISQUES FINANCIERS", title_style))
+                elements.append(Paragraph("Plateforme Panafricaine FinTech & Anti-Fraude (BCEAO / Bâle III)", styles['Normal']))
+                elements.append(Spacer(1, 20))
+                
+                data = [
+                    ["Référence Dossier", dossier_recent.get('id', 'N/A')],
+                    ["Date d'Analyse", dossier_recent.get('date', 'N/A')],
+                    ["Client / Entreprise", dossier_recent.get('client', 'N/A')],
+                    ["Montant Demandé", f"{dossier_recent.get('montant', 0):,.0f} FCFA"],
+                    ["Probabilité de Défaut (IA)", dossier_recent.get('pd', 'N/A')],
+                    ["Décision Prudentielle", dossier_recent.get('decis', 'N/A')]
+                ]
+                t = Table(data, colWidths=[200, 250])
+                t.setStyle(TableStyle([
+                    ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#f1f5f9')),
+                    ('GRID', (0,0), (-1,-1), 1, colors.HexColor('#cbd5e1')),
+                    ('PADDING', (0,0), (-1,-1), 8),
+                ]))
+                elements.append(t)
+                elements.append(Spacer(1, 30))
+                elements.append(Paragraph("<b>Avis de la Direction des Risques :</b> Le présent dossier a été évalué conformément aux modèles de scoring Scikit-Learn et aux exigences prudentielles en vigueur.", styles['Normal']))
+                
+                doc.build(elements)
+                buffer.seek(0)
+                return buffer.getvalue()
+
+            if historique:
+                pdf_bytes = generer_pdf(historique[0])
+                st.download_button("📄 Télécharger le Rapport Officiel (PDF)", data=pdf_bytes, file_name="Rapport_Risque_Financier.pdf", mime="application/pdf")
+    else:
+        st.info("Aucun dossier enregistré pour l'instant.")
+
+    if st.button("📄 Transmettre le Rapport ISO 20022 (XML) au Régulateur"):
         st.json({
             "Document": {
                 "MsgId": f"CENTIF-{uuid.uuid4().hex[:8].upper()}",
-                "Status": "Certifié conforme et transmis au régulateur"
+                "Status": "Certifié conforme et transmis à la BCEAO / CENTIF"
             }
         })
 
@@ -364,6 +436,6 @@ elif current_page == "⚙️ Paramètres":
     st.markdown("#### Paramètres Généraux de la Plateforme")
     st.text_input("Administrateur Responsable", value="Kouassi Kouame Daniel")
     st.text_input("Institution / Université", value="Apex Institute of Management (MBA Data Science & AI)")
-    st.slider("Seuil d'alerte critique anti-fraude", 50, 100, 85)
-    if st.button("Enregistrer les configurations"):
-        st.success("✅ Paramètres système mis à jour.")
+    if st.button("Se déconnecter"):
+        st.session_state.authentifie = False
+        st.rerun()

@@ -1,0 +1,14 @@
+# Exemple avec une sélection de menu (ex: st.selectbox ou boutons de navigation)
+menu_selection = st.sidebar.radio("Navigation", ["Accueil", "Analyse de Risque", "Simulateur What-If"])
+
+if menu_selection == "Accueil":
+    st.title("Accueil de la plateforme")
+    # ...
+
+elif menu_selection == "Analyse de Risque":
+    st.title("Module de Scoring")
+    # ...
+
+elif menu_selection == "Simulateur What-If":
+    # C'ICI QU'IL FAUT COLLER LA FONCTION ET L'APPELER
+    render_what_if_simulator()

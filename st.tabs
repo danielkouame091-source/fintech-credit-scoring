@@ -1,0 +1,14 @@
+# Exemple de structure avec st.tabs
+tab1, tab2, tab3 = st.tabs(["🏠 Tableau de Bord", "🔍 Scoring & Analyse", "📊 Simulateur What-If"])
+
+with tab1:
+    # Votre code pour le tableau de bord
+    st.write("Bienvenue sur la plateforme...")
+
+with tab2:
+    # Votre code de scoring existant
+    st.write("Formulaire de saisie client...")
+
+with tab3:
+    # C'ICI QU'IL FAUT COLLER LA FONCTION ET L'APPELER
+    render_what_if_simulator()
